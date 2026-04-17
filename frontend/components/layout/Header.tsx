@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import TopBar from "./TopBar";
-import Navbar from "./Navbar";
+import { useLang } from "@/context/LangContext";
+import TopBar from "@/components/layout/TopBar";
+import Navbar from "@/components/layout/Navbar";
 
 export default function Header() {
+  const { lang, setLang } = useLang();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -16,8 +18,8 @@ export default function Header() {
 
   return (
     <header className={`siteHeader ${scrolled ? "isScrolled" : ""}`}>
-      <TopBar />
-      <Navbar />
+      <TopBar lang={lang} setLang={setLang} scrolled={scrolled} />
+      <Navbar lang={lang} setLang={setLang} scrolled={scrolled} />
     </header>
   );
 }

@@ -1,23 +1,14 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useLang } from "@/context/LangContext";
 import { services } from "@/lib/content";
 
 const servicesText = {
-  en: {
-    eyebrow: "Core Services",
-    title: "What we fix",
-    sub: "Complete automotive care for domestic, Asian and European vehicles.",
-  },
-  es: {
-    eyebrow: "Servicios",
-    title: "Lo que reparamos",
-    sub: "Servicio automotriz completo para vehículos domésticos, asiáticos y europeos.",
-  },
+  en: { eyebrow:"Core Services", title:"What we fix", sub:"Complete automotive care for domestic, Asian and European vehicles." },
+  es: { eyebrow:"Servicios", title:"Lo que reparamos", sub:"Servicio automotriz completo para vehículos domésticos, asiáticos y europeos." },
 };
 
-// Each icon is a self-contained animated SVG
 const AnimatedIcons: Record<string, React.ReactNode> = {
   "Electrical Diagnostics": (
     <svg viewBox="0 0 64 64" fill="none" className="svcSvg">
@@ -65,7 +56,7 @@ const AnimatedIcons: Record<string, React.ReactNode> = {
       `}</style>
       <path d="M10 46 A26 26 0 0 1 54 46" stroke="rgba(255,255,255,.15)" strokeWidth="3" strokeLinecap="round" fill="none"/>
       <path className="glow" d="M10 46 A26 26 0 0 1 54 46" stroke="#d91f26" strokeWidth="3" strokeLinecap="round" fill="none" strokeDasharray="80" strokeDashoffset="0"/>
-      {[[-28,14],[ 0,6],[28,14]].map(([dx,dy],i)=>(
+      {[[-28,14],[0,6],[28,14]].map(([dx,dy],i)=>(
         <line key={i} x1={32+dx} y1={46-dy} x2={32+dx*.7} y2={46-dy*.7}
           stroke="rgba(255,255,255,.4)" strokeWidth="2" strokeLinecap="round"/>
       ))}
@@ -110,8 +101,7 @@ const AnimatedIcons: Record<string, React.ReactNode> = {
         @keyframes zapShow{0%,39%,100%{opacity:0;transform:scale(.6)}50%,89%{opacity:1;transform:scale(1)}}
       `}</style>
       <rect x="10" y="22" width="44" height="26" rx="4" stroke="rgba(255,255,255,.4)" strokeWidth="2" fill="none"/>
-      <rect x="10" y="22" width="44" height="26" rx="4" stroke="#d91f26" strokeWidth="2" fill="none"
-        strokeDasharray="140" className="bar"/>
+      <rect x="10" y="22" width="44" height="26" rx="4" stroke="#d91f26" strokeWidth="2" fill="none" strokeDasharray="140" className="bar"/>
       <rect x="23" y="16" width="8" height="6" rx="1.5" fill="rgba(255,255,255,.3)"/>
       <rect x="33" y="16" width="8" height="6" rx="1.5" fill="rgba(255,255,255,.3)"/>
       <path className="zap2" d="M34 26l-8 10h7l-4 10 11-14h-8l5-6z" fill="#d91f26"/>
@@ -139,38 +129,73 @@ const AnimatedIcons: Record<string, React.ReactNode> = {
   ),
 };
 
-// 3D tilt card component
-function Card3D({ title, text }: { title: string; text: string }) {
+function Card3D({ title, text, index }: { title: string; text: string; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = (e.clientX - cx) / (rect.width / 2);   // -1 → 1
-    const dy = (e.clientY - cy) / (rect.height / 2);  // -1 → 1
-    const rotX = -dy * 14;
-    const rotY =  dx * 14;
-    el.style.transform = `perspective(700px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.04,1.04,1.04)`;
-    el.style.setProperty("--mx", `${((dx + 1) / 2) * 100}%`);
-    el.style.setProperty("--my", `${((dy + 1) / 2) * 100}%`);
-  };
 
-  const handleMouseLeave = () => {
-    const el = cardRef.current;
-    if (!el) return;
-    el.style.transform = "perspective(700px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
-  };
+    // Scroll reveal
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => el.classList.add("svcCardVisible"), index * 80);
+        obs.disconnect();
+      }
+    }, { threshold: 0.1 });
+    obs.observe(el);
+
+    const applyTilt = (dx: number, dy: number, intensity: number) => {
+      el.style.transform = `perspective(700px) rotateX(${-dy * intensity}deg) rotateY(${dx * intensity}deg) scale3d(1.04,1.04,1.04)`;
+      el.style.setProperty("--mx", `${((dx + 1) / 2) * 100}%`);
+      el.style.setProperty("--my", `${((dy + 1) / 2) * 100}%`);
+    };
+
+    const resetTilt = () => {
+      el.style.transform = "perspective(700px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
+      el.style.setProperty("--mx", "50%");
+      el.style.setProperty("--my", "50%");
+    };
+
+    // Mouse
+    const onMouseMove = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect();
+      applyTilt(
+        (e.clientX - (r.left + r.width  / 2)) / (r.width  / 2),
+        (e.clientY - (r.top  + r.height / 2)) / (r.height / 2),
+        14
+      );
+    };
+
+    // Touch
+    const onTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      const r = el.getBoundingClientRect();
+      applyTilt(
+        (touch.clientX - (r.left + r.width  / 2)) / (r.width  / 2),
+        (touch.clientY - (r.top  + r.height / 2)) / (r.height / 2),
+        8  // softer on mobile
+      );
+    };
+
+    el.addEventListener("mousemove",  onMouseMove);
+    el.addEventListener("mouseleave", resetTilt);
+    el.addEventListener("touchmove",  onTouchMove,  { passive: true });
+    el.addEventListener("touchend",   resetTilt);
+    el.addEventListener("touchcancel",resetTilt);
+
+    return () => {
+      obs.disconnect();
+      el.removeEventListener("mousemove",  onMouseMove);
+      el.removeEventListener("mouseleave", resetTilt);
+      el.removeEventListener("touchmove",  onTouchMove);
+      el.removeEventListener("touchend",   resetTilt);
+      el.removeEventListener("touchcancel",resetTilt);
+    };
+  }, [index]);
 
   return (
-    <article
-      ref={cardRef}
-      className="svcCard"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
+    <article ref={cardRef} className="svcCard">
       <div className="svcShine" />
       <div className="svcHalo" />
       <div className="svcIconWrap">
@@ -199,8 +224,8 @@ export default function ServicesGrid() {
           <p className="svcMainSub">{t.sub}</p>
         </div>
         <div className="svcGrid">
-          {services.map((item) => (
-            <Card3D key={item.title} title={item.title} text={item.text} />
+          {services.map((item, i) => (
+            <Card3D key={item.title} title={item.title} text={item.text} index={i} />
           ))}
         </div>
       </div>
