@@ -1614,7 +1614,7 @@ a.ctInfoText:hover { color: #ffffff; }
 
 .innerPage {
   min-height: 70vh;
-  padding: 180px 0 80px;
+  padding: 132px 0 64px;
   background: #0a0b0e;
 }
 
@@ -1988,7 +1988,7 @@ a.ctInfoText:hover { color: #ffffff; }
   /* Hero — topbar(36) + nav(64) = 100px */
   .hero { min-height: 100dvh; }
   .heroContent { padding-top: 120px; min-height: 100dvh; }
-  .innerPage { padding-top: 120px; }
+  .innerPage { padding-top: 112px; }
 
   /* MOBILE MENU OVERLAY */
   .mobileOverlay,
@@ -2134,7 +2134,7 @@ a.ctInfoText:hover { color: #ffffff; }
 /* Page background — matches site dark theme */
 .innerPage {
   min-height: 70vh;
-  padding: 180px 0 80px;
+  padding: 130px 0 80px;
   background: #07080b;
 }
 
@@ -2859,9 +2859,14 @@ a.ctInfoText:hover { color: #ffffff; }
 .trnPage { background: #07080b; }
 
 .trnHero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
   margin-bottom: 56px;
   padding-bottom: 40px;
   border-bottom: 1px solid rgba(255,255,255,.07);
+  flex-wrap: wrap;
 }
 
 .trnHeroTitle {
@@ -2880,28 +2885,21 @@ a.ctInfoText:hover { color: #ffffff; }
   max-width: 480px;
 }
 
-.trnHeroLeft {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-}
-
 .trnPortalBtn {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  height: 44px;
-  padding: 0 20px;
+  height: 48px;
+  padding: 0 22px;
   background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.10);
-  border-radius: 12px;
-  color: rgba(255,255,255,.6);
-  font-size: .86rem;
+  border-radius: 14px;
+  color: rgba(255,255,255,.7);
+  font-size: .9rem;
   font-weight: 600;
   cursor: pointer;
   transition: background .2s, border-color .2s, color .2s;
-  margin-top: 4px;
+  flex-shrink: 0;
 }
 .trnPortalBtn:hover {
   background: rgba(255,255,255,.08);
