@@ -1,20 +1,30 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.db import init_db
 from app.routers.quote_requests import router as quote_router
-from app.routers.parts     import router as parts_router
-from app.routers.orders    import router as orders_router
-from app.routers.training  import router as training_router
-from app.routers.auth      import router as auth_router
-from app.routers.upload    import router as upload_router
+from app.routers.parts import router as parts_router
+from app.routers.orders import router as orders_router
+from app.routers.training import router as training_router
+from app.routers.auth import router as auth_router
+from app.routers.upload import router as upload_router
 import os
 
 app = FastAPI(title="Safe Car API", version="4.1.0")
 
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://www.autotecnicasafecar.com",
+    "https://autotecnicasafecar.com",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
