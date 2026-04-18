@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/app/routers/auth.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1776519748512,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1776519748512,
+            "name": "Commit-0",
+            "content": "from fastapi import APIRouter, HTTPException, Depends\r\nfrom fastapi.security import HTTPBearer, HTTPAuthorizationCredentials\r\nfrom pydantic import BaseModel\r\nfrom datetime import datetime, timedelta\r\nimport jwt, os, hashlib\r\n\r\nrouter = APIRouter(prefix=\"/auth\", tags=[\"auth\"])\r\nsecurity = HTTPBearer()\r\n\r\nSECRET   = os.getenv(\"JWT_SECRET\", \"safecar-admin-secret-change-in-production\")\r\nALGORITHM = \"HS256\"\r\nEXPIRE_HOURS = 12\r\n\r\n# Admin credentials from env (defaults for dev)\r\nADMIN_USER = os.getenv(\"ADMIN_USERNAME\", \"admin\")\r\nADMIN_PASS = os.getenv(\"ADMIN_PASSWORD\", \"safecar2024\")\r\n\r\nclass LoginIn(BaseModel):\r\n    username: str\r\n    password: str\r\n\r\nclass TokenOut(BaseModel):\r\n    access_token: str\r\n    token_type: str = \"bearer\"\r\n\r\ndef create_token(username: str) -> str:\r\n    payload = {\r\n        \"sub\": username,\r\n        \"exp\": datetime.utcnow() + timedelta(hours=EXPIRE_HOURS),\r\n        \"iat\": datetime.utcnow(),\r\n    }\r\n    return jwt.encode(payload, SECRET, algorithm=ALGORITHM)\r\n\r\ndef verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:\r\n    try:\r\n        payload = jwt.decode(credentials.credentials, SECRET, algorithms=[ALGORITHM])\r\n        return payload[\"sub\"]\r\n    except jwt.ExpiredSignatureError:\r\n        raise HTTPException(401, \"Token expired\")\r\n    except Exception:\r\n        raise HTTPException(401, \"Invalid token\")\r\n\r\n@router.post(\"/login\", response_model=TokenOut)\r\ndef login(data: LoginIn):\r\n    if data.username != ADMIN_USER or data.password != ADMIN_PASS:\r\n        raise HTTPException(401, \"Invalid credentials\")\r\n    return {\"access_token\": create_token(data.username)}\r\n\r\n@router.get(\"/me\")\r\ndef me(user: str = Depends(verify_token)):\r\n    return {\"username\": user}"
+        }
+    ]
+}

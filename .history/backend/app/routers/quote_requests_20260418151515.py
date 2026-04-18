@@ -1,11 +1,11 @@
 from fastapi import APIRouter
 from app.db import get_connection
-from app.schemas import QuoteRequestCreate
+from app.schemas import QuoteRequestIn
 
 router = APIRouter(prefix="/quote-requests", tags=["quote-requests"])
 
 @router.post("")
-def create_quote_request(payload: QuoteRequestCreate):
+def create_quote_request(payload: QuoteRequestIn):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
