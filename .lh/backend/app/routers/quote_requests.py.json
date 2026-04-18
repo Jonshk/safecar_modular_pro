@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/app/routers/quote_requests.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1776518116751,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1776518116751,
+            "name": "Commit-0",
+            "content": "from fastapi import APIRouter\r\nfrom app.db import get_connection\r\nfrom app.schemas import QuoteRequestIn\r\n\r\nrouter = APIRouter(prefix=\"/quote-requests\", tags=[\"quote-requests\"])\r\n\r\n@router.post(\"\")\r\ndef create_quote_request(payload: QuoteRequestIn):\r\n    conn = get_connection()\r\n    cur = conn.cursor()\r\n    cur.execute(\r\n        \"INSERT INTO quote_requests (name, phone, vehicle, issue) VALUES (?, ?, ?, ?)\",\r\n        (payload.name, payload.phone, payload.vehicle, payload.issue),\r\n    )\r\n    conn.commit()\r\n    new_id = cur.lastrowid\r\n    row = cur.execute(\r\n        \"SELECT id, name, phone, vehicle, issue, created_at FROM quote_requests WHERE id = ?\",\r\n        (new_id,),\r\n    ).fetchone()\r\n    conn.close()\r\n    return dict(row)\r\n\r\n@router.get(\"\")\r\ndef list_quote_requests():\r\n    conn = get_connection()\r\n    rows = conn.execute(\r\n        \"SELECT id, name, phone, vehicle, issue, created_at FROM quote_requests ORDER BY id DESC\"\r\n    ).fetchall()\r\n    conn.close()\r\n    return [dict(row) for row in rows]"
+        }
+    ]
+}
