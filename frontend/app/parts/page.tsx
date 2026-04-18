@@ -82,7 +82,15 @@ interface Part {
 }
 
 // ── PART CARD ─────────────────────────────────────────────
-function PartCard({ part, t }: { part: Part; t: typeof txt["en"] }) {
+function PartCard({
+  part,
+  t,
+  lang,
+}: {
+  part: Part;
+  t: typeof txt["en"];
+  lang: keyof typeof txt;
+}) {
   const { add } = useCart();
   const [flash, setFlash] = useState(false);
 
@@ -99,8 +107,12 @@ function PartCard({ part, t }: { part: Part; t: typeof txt["en"] }) {
           ? <img src={part.image_url} alt={part.name} />
           : <div className="partImgPlaceholder">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"
-                  stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                <path
+                  d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
               </svg>
             </div>
         }
@@ -195,7 +207,6 @@ function CheckoutPage({ onBack, t }: { onBack: () => void; t: typeof txt["en"] }
     e.preventDefault();
     setStatus("paying");
     try {
-      // 1. Create order
       const orderRes = await fetch(`${site.apiBase}/orders/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -210,7 +221,6 @@ function CheckoutPage({ onBack, t }: { onBack: () => void; t: typeof txt["en"] }
       if (!orderRes.ok) throw new Error();
       const order = await orderRes.json();
 
-      // 2. Create payment intent
       const piRes = await fetch(`${site.apiBase}/orders/payment-intent`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -218,13 +228,11 @@ function CheckoutPage({ onBack, t }: { onBack: () => void; t: typeof txt["en"] }
       });
 
       if (!piRes.ok) {
-        // No Stripe configured — mark as confirmed anyway (COD / manual)
         clear();
         setStatus("ok");
         return;
       }
 
-      // 3. If Stripe is configured, load Stripe.js and confirm
       const { client_secret } = await piRes.json();
       // @ts-ignore
       const stripe = window.Stripe?.(process.env.NEXT_PUBLIC_STRIPE_KEY || "");
@@ -261,7 +269,6 @@ function CheckoutPage({ onBack, t }: { onBack: () => void; t: typeof txt["en"] }
     <div className="checkoutWrap">
       <button className="checkoutBack" onClick={onBack}>{t.back}</button>
       <div className="checkoutGrid">
-        {/* Left — summary */}
         <div className="checkoutSummary">
           <h2>{t.cart}</h2>
           {items.map(i => (
@@ -276,7 +283,6 @@ function CheckoutPage({ onBack, t }: { onBack: () => void; t: typeof txt["en"] }
           </div>
         </div>
 
-        {/* Right — form */}
         <form className="checkoutForm" onSubmit={handleSubmit}>
           <h2>{t.checkoutTitle}</h2>
           <input className="ctInput" placeholder={t.yourName} required
@@ -304,23 +310,22 @@ export default function PartsPage() {
   const t = txt[lang];
   const { count } = useCart();
 
-  const [parts, setParts]         = useState<Part[]>([]);
+  const [parts, setParts] = useState<Part[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [cartOpen, setCartOpen]   = useState(false);
-  const [checkout, setCheckout]   = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [checkout, setCheckout] = useState(false);
 
-  // Filters
-  const [category, setCategory]   = useState("");
-  const [search, setSearch]       = useState("");
-  const [inStock, setInStock]     = useState(false);
+  const [category, setCategory] = useState("");
+  const [search, setSearch] = useState("");
+  const [inStock, setInStock] = useState(false);
 
   const fetchParts = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (category) params.set("category", category);
-    if (search)   params.set("search", search);
-    if (inStock)  params.set("in_stock", "true");
+    if (search) params.set("search", search);
+    if (inStock) params.set("in_stock", "true");
     try {
       const res = await fetch(`${site.apiBase}/parts/?${params}`);
       const data = await res.json();
@@ -353,8 +358,6 @@ export default function PartsPage() {
   return (
     <main className="innerPage">
       <div className="container">
-
-        {/* Header */}
         <div className="partsHeader">
           <div>
             <p className="eyebrow">{t.eyebrow}</p>
@@ -372,7 +375,6 @@ export default function PartsPage() {
           </button>
         </div>
 
-        {/* Search + stock filter */}
         <div className="partsFilters">
           <input
             className="partsSearch ctInput"
@@ -386,7 +388,6 @@ export default function PartsPage() {
           </label>
         </div>
 
-        {/* Category pills */}
         <div className="partsCatPills">
           <button
             className={`partsCatPill ${category === "" ? "partsCatPillActive" : ""}`}
@@ -405,25 +406,22 @@ export default function PartsPage() {
           ))}
         </div>
 
-        {/* Results count */}
         {!loading && (
           <p className="partsCount">{parts.length} {parts.length === 1 ? "part" : "parts"} found</p>
         )}
 
-        {/* Grid */}
         {loading
           ? <div className="partsLoading">
-              {[...Array(6)].map((_,i) => <div key={i} className="partSkeleton" />)}
+              {[...Array(6)].map((_, i) => <div key={i} className="partSkeleton" />)}
             </div>
           : parts.length === 0
             ? <p className="partsEmpty">{t.noResults}</p>
             : <div className="partsGrid">
-                {parts.map(p => <PartCard key={p.id} part={p} t={t} />)}
+                {parts.map(p => <PartCard key={p.id} part={p} t={t} lang={lang} />)}
               </div>
         }
       </div>
 
-      {/* Cart drawer */}
       <CartDrawer
         open={cartOpen}
         onClose={() => setCartOpen(false)}
