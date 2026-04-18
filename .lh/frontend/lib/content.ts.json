@@ -3,11 +3,15 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 1,
             "patches": [
                 {
                     "date": 1776520734014,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1776520925720,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,13 +1,10 @@\n export const site = {\r\n-  phone: \"(312) 850-9417\",\r\n-  phoneHref: \"tel:+13128509417\",\r\n-  address: \"824 S Western Ave, Chicago, IL 60612\",\r\n+  phone: \"+1 (872) 354-5706\",\r\n+  phoneHref: \"tel:+18723545706\",\r\n+  address: \"1052 W 51st St, Chicago, IL 60609\",\r\n   hours: \"Mon - Fri 7:30 AM - 5:30 PM\",\r\n-\r\n-  apiBase:\r\n-    process.env.NEXT_PUBLIC_API_BASE ||\r\n-    \"https://safecar-backend.onrender.com\"\r\n+  apiBase: process.env.NEXT_PUBLIC_API_BASE || \"https://safecar-backend.onrender.com\",\r\n };\r\n \r\n export const hero = {\r\n   eyebrow: \"CHICAGO AUTO REPAIR SHOP\",\r\n"
                 }
             ],
             "date": 1776520734014,
