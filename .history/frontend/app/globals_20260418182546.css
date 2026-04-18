@@ -3596,23 +3596,3 @@ a.ctInfoText:hover { color: #ffffff; }
   .adminSidebar { width:100%; height:auto; flex-direction:row; overflow-x:auto; }
   .adminMain { padding: 20px 16px; }
 }
-
-.partCategoryTag { font-size:.68rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.3); margin:0 0 4px; }
-
-/* Fix native select dropdown background */
-select.ctInput,
-select {
-  background-color: #111318 !important;
-  color: #ffffff !important;
-}
-select.ctInput option,
-select option {
-  background-color: #111318 !important;
-  color: #ffffff !important;
-}
-
-/* Admin select overflow fix */
-.adminSection {
-  position: relative;
-  z-index: 1;
-}

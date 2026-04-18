@@ -1,0 +1,18 @@
+{
+    "sourceFile": "backend/app/routers/upload.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1776531788258,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1776531788258,
+            "name": "Commit-0",
+            "content": "from fastapi import APIRouter, UploadFile, File, HTTPException\r\nfrom fastapi.staticfiles import StaticFiles\r\nimport os, uuid, shutil\r\n\r\nrouter = APIRouter(prefix=\"/upload\", tags=[\"upload\"])\r\n\r\nUPLOAD_DIR = os.path.join(os.path.dirname(__file__), \"..\", \"static\", \"images\")\r\nos.makedirs(UPLOAD_DIR, exist_ok=True)\r\n\r\nALLOWED = {\"image/jpeg\", \"image/png\", \"image/webp\", \"image/gif\"}\r\nMAX_SIZE = 5 * 1024 * 1024  # 5MB\r\n\r\n@router.post(\"/image\")\r\nasync def upload_image(file: UploadFile = File(...)):\r\n    if file.content_type not in ALLOWED:\r\n        raise HTTPException(400, \"Only JPEG, PNG, WebP and GIF allowed\")\r\n\r\n    content = await file.read()\r\n    if len(content) > MAX_SIZE:\r\n        raise HTTPException(400, \"File too large — max 5MB\")\r\n\r\n    ext = file.filename.rsplit(\".\", 1)[-1].lower() if \".\" in file.filename else \"jpg\"\r\n    filename = f\"{uuid.uuid4().hex}.{ext}\"\r\n    filepath = os.path.join(UPLOAD_DIR, filename)\r\n\r\n    with open(filepath, \"wb\") as f:\r\n        f.write(content)\r\n\r\n    # Return the public URL\r\n    base_url = os.getenv(\"API_BASE_URL\", \"http://127.0.0.1:8000\")\r\n    return {\"url\": f\"{base_url}/static/images/{filename}\", \"filename\": filename}\r\n\r\n@router.delete(\"/image/{filename}\")\r\nasync def delete_image(filename: str):\r\n    # Basic security — no path traversal\r\n    if \"/\" in filename or \"\\\\\" in filename or \"..\" in filename:\r\n        raise HTTPException(400, \"Invalid filename\")\r\n    filepath = os.path.join(UPLOAD_DIR, filename)\r\n    if os.path.exists(filepath):\r\n        os.remove(filepath)\r\n    return {\"deleted\": True}"
+        }
+    ]
+}

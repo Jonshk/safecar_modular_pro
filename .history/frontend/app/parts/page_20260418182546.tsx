@@ -5,12 +5,6 @@ import { useCart } from "@/context/CartContext";
 import { useLang } from "@/context/LangContext";
 import { site } from "@/lib/content";
 
-// Category name translations
-const catNames: Record<string, Record<string, string>> = {
-  en: { Brakes:"Brakes", Electrical:"Electrical", Engine:"Engine", Suspension:"Suspension", Filters:"Filters", Cooling:"Cooling" },
-  es: { Brakes:"Frenos", Electrical:"Eléctrico", Engine:"Motor", Suspension:"Suspensión", Filters:"Filtros", Cooling:"Refrigeración" },
-};
-
 const txt = {
   en: {
     eyebrow: "Parts & Components",
@@ -110,7 +104,6 @@ function PartCard({ part, t }: { part: Part; t: typeof txt["en"] }) {
         )}
       </div>
       <div className="partInfo">
-        <p className="partCategoryTag">{catNames[lang]?.[part.category] || part.category}</p>
         {part.brand && <p className="partBrand">{part.brand}</p>}
         <h3 className="partName">{part.name}</h3>
         {part.description && <p className="partDesc">{part.description}</p>}
@@ -400,7 +393,7 @@ export default function PartsPage() {
               className={`partsCatPill ${category === cat ? "partsCatPillActive" : ""}`}
               onClick={() => setCategory(category === cat ? "" : cat)}
             >
-              {catNames[lang]?.[cat] || cat}
+              {cat}
             </button>
           ))}
         </div>

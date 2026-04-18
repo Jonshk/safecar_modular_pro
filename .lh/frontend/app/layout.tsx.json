@@ -1,0 +1,18 @@
+{
+    "sourceFile": "frontend/app/layout.tsx",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1776531187495,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1776531187495,
+            "name": "Commit-0",
+            "content": "\"use client\";\r\n\r\nimport \"./globals.css\";\r\nimport { usePathname } from \"next/navigation\";\r\nimport { LangProvider } from \"@/context/LangContext\";\r\nimport { CartProvider } from \"@/context/CartContext\";\r\nimport Header from \"@/components/layout/Header\";\r\nimport Footer from \"@/components/layout/Footer\";\r\n\r\nexport default function RootLayout({\r\n  children,\r\n}: {\r\n  children: React.ReactNode;\r\n}) {\r\n  const pathname = usePathname();\r\n  const isAdmin = pathname?.startsWith(\"/admin\");\r\n\r\n  return (\r\n    <html lang=\"en\">\r\n      <head>\r\n        <title>Safe Car — Auto Repair & Diagnostics Chicago</title>\r\n        <meta name=\"description\" content=\"Trusted automotive repair, electrical diagnostics and training in Chicago.\" />\r\n        <link rel=\"icon\" href=\"/logo-safecar.png\" type=\"image/png\" />\r\n        <link\r\n          rel=\"stylesheet\"\r\n          href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css\"\r\n          crossOrigin=\"anonymous\"\r\n        />\r\n      </head>\r\n      <body>\r\n        {isAdmin ? (\r\n          // Admin — sin header ni footer\r\n          <>{children}</>\r\n        ) : (\r\n          // Site público — con header y footer\r\n          <LangProvider>\r\n            <CartProvider>\r\n              <Header />\r\n              {children}\r\n              <Footer />\r\n            </CartProvider>\r\n          </LangProvider>\r\n        )}\r\n      </body>\r\n    </html>\r\n  );\r\n}"
+        }
+    ]
+}

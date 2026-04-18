@@ -5,12 +5,6 @@ import { useCart } from "@/context/CartContext";
 import { useLang } from "@/context/LangContext";
 import { site } from "@/lib/content";
 
-// Category name translations
-const catNames: Record<string, Record<string, string>> = {
-  en: { Brakes:"Brakes", Electrical:"Electrical", Engine:"Engine", Suspension:"Suspension", Filters:"Filters", Cooling:"Cooling" },
-  es: { Brakes:"Frenos", Electrical:"Eléctrico", Engine:"Motor", Suspension:"Suspensión", Filters:"Filtros", Cooling:"Refrigeración" },
-};
-
 const txt = {
   en: {
     eyebrow: "Parts & Components",
@@ -110,7 +104,6 @@ function PartCard({ part, t }: { part: Part; t: typeof txt["en"] }) {
         )}
       </div>
       <div className="partInfo">
-        <p className="partCategoryTag">{catNames[lang]?.[part.category] || part.category}</p>
         {part.brand && <p className="partBrand">{part.brand}</p>}
         <h3 className="partName">{part.name}</h3>
         {part.description && <p className="partDesc">{part.description}</p>}
@@ -372,7 +365,7 @@ export default function PartsPage() {
           </button>
         </div>
 
-        {/* Search + stock filter */}
+        {/* Filters */}
         <div className="partsFilters">
           <input
             className="partsSearch ctInput"
@@ -380,35 +373,19 @@ export default function PartsPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
+          <select
+            className="partsCatSelect ctInput"
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+          >
+            <option value="">{t.all}</option>
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
           <label className="partsInStock">
             <input type="checkbox" checked={inStock} onChange={e => setInStock(e.target.checked)} />
             {t.inStock}
           </label>
         </div>
-
-        {/* Category pills */}
-        <div className="partsCatPills">
-          <button
-            className={`partsCatPill ${category === "" ? "partsCatPillActive" : ""}`}
-            onClick={() => setCategory("")}
-          >
-            {t.all}
-          </button>
-          {categories.map(cat => (
-            <button
-              key={cat}
-              className={`partsCatPill ${category === cat ? "partsCatPillActive" : ""}`}
-              onClick={() => setCategory(category === cat ? "" : cat)}
-            >
-              {catNames[lang]?.[cat] || cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Results count */}
-        {!loading && (
-          <p className="partsCount">{parts.length} {parts.length === 1 ? "part" : "parts"} found</p>
-        )}
 
         {/* Grid */}
         {loading
