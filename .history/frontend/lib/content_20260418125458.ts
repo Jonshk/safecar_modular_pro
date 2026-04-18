@@ -3,10 +3,7 @@ export const site = {
   phoneHref: "tel:+13128509417",
   address: "824 S Western Ave, Chicago, IL 60612",
   hours: "Mon - Fri 7:30 AM - 5:30 PM",
-
-  apiBase:
-    process.env.NEXT_PUBLIC_API_BASE ||
-    "https://safecar-backend.onrender.com"
+  apiBase: process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8000"
 };
 
 export const hero = {
