@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from app.db import get_connection
 from app.schemas import PartCreate, PartUpdate, PartOut
-from datetime import datetime
 
 router = APIRouter(prefix="/parts", tags=["parts"])
 
@@ -97,6 +96,10 @@ def update_part(part_id: int, data: PartUpdate):
     if not updates:
         c.close(); conn.close()
         return dict(existing)
+
+    # PostgreSQL integer columns don't accept Python booleans
+    if "is_active" in updates:
+        updates["is_active"] = int(updates["is_active"])
 
     set_clause = ", ".join(f"{k} = %s" for k in updates)
     values = list(updates.values()) + [part_id]
