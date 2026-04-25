@@ -6,7 +6,15 @@ from datetime import datetime
 
 router = APIRouter(prefix="/parts", tags=["parts"])
 
-# ── PUBLIC: list active parts (catalog) ──────────────────
+@router.get("/meta/categories")
+def list_categories():
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("SELECT DISTINCT category FROM parts WHERE is_active = 1 ORDER BY category")
+    rows = c.fetchall()
+    c.close(); conn.close()
+    return [r["category"] for r in rows]
+
 @router.get("/", response_model=List[PartOut])
 def list_parts(
     category: Optional[str] = Query(None),
@@ -24,50 +32,39 @@ def list_parts(
     params = []
 
     if category:
-        query += " AND category = ?"
+        query += " AND category = %s"
         params.append(category)
     if search:
-        query += " AND (name LIKE ? OR description LIKE ? OR brand LIKE ?)"
+        query += " AND (name ILIKE %s OR description ILIKE %s OR brand ILIKE %s)"
         params += [f"%{search}%"] * 3
     if min_price is not None:
-        query += " AND price >= ?"
+        query += " AND price >= %s"
         params.append(min_price)
     if max_price is not None:
-        query += " AND price <= ?"
+        query += " AND price <= %s"
         params.append(max_price)
     if in_stock:
         query += " AND stock > 0"
 
-    query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    query += " ORDER BY created_at DESC LIMIT %s OFFSET %s"
     params += [limit, skip]
 
-    rows = c.execute(query, params).fetchall()
-    conn.close()
+    c.execute(query, params)
+    rows = c.fetchall()
+    c.close(); conn.close()
     return [dict(r) for r in rows]
 
-# ── PUBLIC: get single part ───────────────────────────────
 @router.get("/{part_id}", response_model=PartOut)
 def get_part(part_id: int):
     conn = get_connection()
-    row = conn.execute(
-        "SELECT * FROM parts WHERE id = ? AND is_active = 1", (part_id,)
-    ).fetchone()
-    conn.close()
+    c = conn.cursor()
+    c.execute("SELECT * FROM parts WHERE id = %s AND is_active = 1", (part_id,))
+    row = c.fetchone()
+    c.close(); conn.close()
     if not row:
         raise HTTPException(404, "Part not found")
     return dict(row)
 
-# ── PUBLIC: list categories ───────────────────────────────
-@router.get("/meta/categories")
-def list_categories():
-    conn = get_connection()
-    rows = conn.execute(
-        "SELECT DISTINCT category FROM parts WHERE is_active = 1 ORDER BY category"
-    ).fetchall()
-    conn.close()
-    return [r["category"] for r in rows]
-
-# ── ADMIN: create part ────────────────────────────────────
 @router.post("/admin/create", response_model=PartOut, status_code=201)
 def create_part(part: PartCreate):
     conn = get_connection()
@@ -75,48 +72,45 @@ def create_part(part: PartCreate):
     c.execute("""
         INSERT INTO parts (name, description, category, brand, sku, price, stock,
                            image_url, compatible_vehicles, is_active)
-        VALUES (?,?,?,?,?,?,?,?,?,?)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING *
     """, (
         part.name, part.description, part.category, part.brand, part.sku,
         part.price, part.stock, part.image_url, part.compatible_vehicles,
         int(part.is_active)
     ))
+    row = c.fetchone()
     conn.commit()
-    row = conn.execute(
-        "SELECT * FROM parts WHERE id = ?", (c.lastrowid,)
-    ).fetchone()
-    conn.close()
+    c.close(); conn.close()
     return dict(row)
 
-# ── ADMIN: update part ────────────────────────────────────
 @router.patch("/admin/{part_id}", response_model=PartOut)
 def update_part(part_id: int, data: PartUpdate):
     conn = get_connection()
-    existing = conn.execute(
-        "SELECT * FROM parts WHERE id = ?", (part_id,)
-    ).fetchone()
+    c = conn.cursor()
+    c.execute("SELECT * FROM parts WHERE id = %s", (part_id,))
+    existing = c.fetchone()
     if not existing:
-        conn.close()
+        c.close(); conn.close()
         raise HTTPException(404, "Part not found")
 
     updates = {k: v for k, v in data.dict().items() if v is not None}
     if not updates:
-        conn.close()
+        c.close(); conn.close()
         return dict(existing)
 
-    set_clause = ", ".join(f"{k} = ?" for k in updates)
+    set_clause = ", ".join(f"{k} = %s" for k in updates)
     values = list(updates.values()) + [part_id]
-    conn.execute(f"UPDATE parts SET {set_clause} WHERE id = ?", values)
+    c.execute(f"UPDATE parts SET {set_clause} WHERE id = %s RETURNING *", values)
+    row = c.fetchone()
     conn.commit()
-    row = conn.execute("SELECT * FROM parts WHERE id = ?", (part_id,)).fetchone()
-    conn.close()
+    c.close(); conn.close()
     return dict(row)
 
-# ── ADMIN: delete (soft) ──────────────────────────────────
 @router.delete("/admin/{part_id}")
 def delete_part(part_id: int):
     conn = get_connection()
-    conn.execute("UPDATE parts SET is_active = 0 WHERE id = ?", (part_id,))
+    c = conn.cursor()
+    c.execute("UPDATE parts SET is_active = 0 WHERE id = %s", (part_id,))
     conn.commit()
-    conn.close()
+    c.close(); conn.close()
     return {"deleted": True}
