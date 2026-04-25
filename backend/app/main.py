@@ -18,8 +18,11 @@ app = FastAPI(title="Safe Car API", version="4.1.0")
 allowed_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
     "https://www.autotecnicasafecar.com",
     "https://autotecnicasafecar.com",
+    "https://safecar-modular-pro.vercel.app",
 ]
 
 app.add_middleware(
