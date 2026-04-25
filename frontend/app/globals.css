@@ -3634,3 +3634,667 @@ select option {
 
 /* TopBar WhatsApp item color */
 .topItemLink:has(path[d*="WhatsApp"]) { color: rgba(255,255,255,.9); }
+
+/* ═══════════════════════════════════════════════════════
+   TRAINING PAGE — pegar al final de globals.css
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Hero layout ─────────────────────────────────────── */
+.trnHeroLayout {
+  position: relative;
+  z-index: 2;
+  padding: 160px 0 120px;
+  max-width: 700px;
+}
+
+.trnHeroTitle {
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  margin: 12px 0 20px;
+  color: #fff;
+}
+
+/* ── Training gallery masonry (6-cell) ───────────────── */
+.trnMasonry {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 220px 220px 180px;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .trnMasonry {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(6, 160px);
+  }
+  .trnMasonry .glryCell {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+}
+
+/* ── Courses section ─────────────────────────────────── */
+.trnCoursesSection {
+  background: #07080b;
+  padding: 100px 0 120px;
+}
+
+.trnCoursesEmpty {
+  text-align: center;
+  color: rgba(255,255,255,.3);
+  padding: 60px 0;
+  font-size: .95rem;
+}
+
+/* ── Courses grid ────────────────────────────────────── */
+.trnCoursesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 60px;
+}
+
+@media (max-width: 640px) {
+  .trnCoursesGrid { grid-template-columns: 1fr; }
+}
+
+/* ── Skeleton ────────────────────────────────────────── */
+.trnCourseSkeleton {
+  height: 380px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  animation: shimmer 1.6s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+.trnCourseSkeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.04) 50%, transparent 100%);
+  animation: shimmerSlide 1.6s ease-in-out infinite;
+}
+
+/* ── Course card ─────────────────────────────────────── */
+.trnCourseCard {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+.trnCourseCard.trnCourseCardVis {
+  animation: trnCardIn .5s ease forwards;
+}
+
+@keyframes trnCardIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.trnCourseCard:nth-child(1) { animation-delay: .00s; }
+.trnCourseCard:nth-child(2) { animation-delay: .08s; }
+.trnCourseCard:nth-child(3) { animation-delay: .16s; }
+.trnCourseCard:nth-child(4) { animation-delay: .24s; }
+.trnCourseCard:nth-child(5) { animation-delay: .32s; }
+.trnCourseCard:nth-child(6) { animation-delay: .40s; }
+
+.trnCourseCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(217,31,38,.3);
+  box-shadow: 0 20px 60px rgba(217,31,38,.08);
+}
+
+/* ── Card image ──────────────────────────────────────── */
+.trnCourseImg {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  background: #111;
+}
+.trnCourseImg img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform .5s ease;
+}
+.trnCourseCard:hover .trnCourseImg img { transform: scale(1.05); }
+
+.trnCourseImgFallback {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #0d0d0f 0%, #1a0a0b 100%);
+}
+
+.trnCourseMode {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: rgba(0,0,0,.7);
+  border: 1px solid rgba(217,31,38,.3);
+  color: #d91f26;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+
+/* ── Card body ───────────────────────────────────────── */
+.trnCourseBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.trnCourseMeta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.trnCourseDur,
+.trnCourseSched {
+  font-size: .75rem;
+  color: rgba(255,255,255,.4);
+  font-weight: 600;
+}
+
+.trnCourseTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #fff;
+  margin: 0;
+}
+
+.trnCourseDesc {
+  font-size: .85rem;
+  line-height: 1.6;
+  color: rgba(255,255,255,.42);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Card footer ─────────────────────────────────────── */
+.trnCourseFooter {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.trnCoursePrice {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  margin: 0;
+}
+
+.trnCourseSpots {
+  font-size: .72rem;
+  font-weight: 700;
+  margin: 4px 0 0;
+}
+
+.trnCourseBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 20px;
+  background: #d91f26;
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  border-radius: 10px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s, transform .2s;
+  flex-shrink: 0;
+}
+.trnCourseBtn:hover {
+  background: #b81920;
+  transform: scale(1.04);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SUPERMARKET CART — pegar al final de globals.css
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Cart button in header ────────────────────────────── */
+.scCartBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 54px;
+  padding: 0 22px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  color: #ffffff;
+  font-size: .92rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background .2s, border-color .2s, transform .15s;
+}
+.scCartBtn:hover {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(217,31,38,.4);
+}
+.scCartBtnBounce {
+  animation: scBtnBounce .4s cubic-bezier(.36,.07,.19,.97);
+}
+@keyframes scBtnBounce {
+  0%,100% { transform: scale(1); }
+  30%      { transform: scale(1.18) rotate(-3deg); }
+  60%      { transform: scale(0.94) rotate(2deg); }
+}
+
+.scCartBtnIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.scCartSvg {
+  width: 28px;
+  height: 28px;
+  color: #ffffff;
+  transition: color .2s;
+}
+.scCartBtn:hover .scCartSvg { color: #d91f26; }
+
+.scCartShake {
+  animation: scCartWiggle .35s ease;
+}
+@keyframes scCartWiggle {
+  0%,100% { transform: rotate(0deg); }
+  20%     { transform: rotate(-12deg) translateX(-2px); }
+  40%     { transform: rotate(10deg) translateX(2px); }
+  60%     { transform: rotate(-8deg); }
+  80%     { transform: rotate(6deg); }
+}
+
+.scCartBadge {
+  position: absolute;
+  top: -8px; right: -8px;
+  width: 20px; height: 20px;
+  background: #d91f26;
+  border-radius: 50%;
+  font-size: .65rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #07080b;
+  box-shadow: 0 0 0 0 rgba(217,31,38,.4);
+  transition: transform .2s;
+}
+.scBadgePop {
+  animation: scBadgePop .4s cubic-bezier(.36,.07,.19,.97);
+}
+@keyframes scBadgePop {
+  0%    { transform: scale(1); box-shadow: 0 0 0 0 rgba(217,31,38,.5); }
+  40%   { transform: scale(1.6); }
+  70%   { transform: scale(.85); }
+  85%   { box-shadow: 0 0 0 10px rgba(217,31,38,0); }
+  100%  { transform: scale(1); box-shadow: 0 0 0 0 rgba(217,31,38,0); }
+}
+
+/* ── Flying item particle ─────────────────────────────── */
+.flyLayer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.flyItem {
+  position: fixed;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #1a1a1f;
+  border: 2px solid rgba(217,31,38,.5);
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  pointer-events: none;
+  transition: none;
+  --fly-tx: 0px;
+  --fly-ty: 0px;
+}
+.flyItem img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.flyItemFallback {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(217,31,38,.1);
+}
+.flyItem.flyActive {
+  animation: flyToCart .55s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes flyToCart {
+  0%   { transform: translate(-50%,-50%) scale(1);    opacity: 1; }
+  60%  { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--fly-tx)), calc(-50% + var(--fly-ty))) scale(0.2); opacity: 0; }
+}
+
+/* ── Bump animation on Add button ────────────────────── */
+.partBump {
+  animation: partBump .3s cubic-bezier(.36,.07,.19,.97) !important;
+}
+@keyframes partBump {
+  0%,100% { transform: scale(1); }
+  40%     { transform: scale(1.15); }
+}
+
+/* ── Drawer ───────────────────────────────────────────── */
+.scDrawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 420px; max-width: 96vw;
+  background: #0a0b0f;
+  border-left: 1px solid rgba(255,255,255,.08);
+  z-index: 601;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .4s cubic-bezier(.22,1,.36,1);
+  overflow: hidden;
+}
+.scDrawerOpen { transform: translateX(0); }
+
+/* ── Drawer header ────────────────────────────────────── */
+.scHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px 18px;
+  background: linear-gradient(180deg, rgba(217,31,38,.08) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+.scHeadLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.scHeadIcon {
+  width: 36px; height: 27px;
+  color: #d91f26;
+}
+.scHeadTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -.02em;
+}
+.scHeadSub {
+  margin: 2px 0 0;
+  font-size: .72rem;
+  color: rgba(255,255,255,.35);
+  font-weight: 500;
+}
+.scClose {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 10px;
+  color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.scClose:hover { background: rgba(255,255,255,.12); }
+
+/* ── Conveyor belt ────────────────────────────────────── */
+.scConveyor {
+  height: 10px;
+  background: #0d0e13;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.scConveyorBelt {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,.03) 0px,
+    rgba(255,255,255,.03) 18px,
+    transparent 18px,
+    transparent 36px
+  );
+  animation: conveyorMove 1.4s linear infinite;
+}
+@keyframes conveyorMove {
+  from { background-position: 0 0; }
+  to   { background-position: 36px 0; }
+}
+.scConveyorLine {
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 2px;
+  background: rgba(217,31,38,.2);
+  transform: translateY(-50%);
+}
+
+/* ── Empty state ──────────────────────────────────────── */
+.scEmpty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: rgba(255,255,255,.25);
+  padding: 40px;
+}
+.scEmptyIcon {
+  width: 64px; height: 48px;
+  opacity: .2;
+}
+
+/* ── Items list ───────────────────────────────────────── */
+.scItems {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 14px;
+  padding: 12px 14px;
+  transition: border-color .2s, background .2s;
+  animation: scItemIn .3s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes scItemIn {
+  from { opacity:0; transform: translateX(20px); }
+  to   { opacity:1; transform: translateX(0); }
+}
+.scItemNew {
+  animation: scItemNew .5s cubic-bezier(.22,1,.36,1) !important;
+}
+@keyframes scItemNew {
+  0%   { background: rgba(217,31,38,.15); border-color: rgba(217,31,38,.4); transform: scale(1.02); }
+  100% { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.06); transform: scale(1); }
+}
+.scItem:hover { border-color: rgba(255,255,255,.10); background: rgba(255,255,255,.05); }
+
+/* Thumb */
+.scItemThumb {
+  width: 48px; height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #111;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,.07);
+}
+.scItemThumb img { width:100%; height:100%; object-fit:cover; }
+.scItemThumbFallback {
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  color: rgba(255,255,255,.2);
+}
+
+/* Info */
+.scItemInfo { flex:1; min-width:0; }
+.scItemName {
+  font-size: .84rem; font-weight: 600;
+  color: rgba(255,255,255,.9);
+  margin: 0 0 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.scItemUnit {
+  font-size: .72rem;
+  color: rgba(255,255,255,.3);
+  margin: 0;
+}
+
+/* Qty stepper */
+.scQty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 999px;
+  padding: 3px 6px;
+  flex-shrink: 0;
+}
+.scQtyBtn {
+  width: 24px; height: 24px;
+  background: rgba(255,255,255,.08);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, transform .1s;
+  flex-shrink: 0;
+}
+.scQtyBtn:hover { background: rgba(217,31,38,.25); transform: scale(1.1); }
+.scQtyNum {
+  font-size: .82rem; font-weight: 700;
+  min-width: 20px; text-align: center;
+  color: #fff;
+}
+
+/* Subtotal */
+.scItemTotal {
+  font-size: .9rem; font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  flex-shrink: 0;
+  min-width: 54px;
+  text-align: right;
+}
+
+/* Remove */
+.scItemRemove {
+  background: none; border: none;
+  color: rgba(255,255,255,.2);
+  cursor: pointer;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  transition: color .15s, background .15s;
+  flex-shrink: 0;
+}
+.scItemRemove:hover { color: #f87171; background: rgba(248,113,113,.1); }
+
+/* ── Footer ───────────────────────────────────────────── */
+.scFooter {
+  padding: 16px 20px 24px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  background: rgba(0,0,0,.2);
+  flex-shrink: 0;
+}
+
+/* Barcode decoration */
+.scBarcode {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 24px;
+  margin-bottom: 16px;
+  opacity: .5;
+}
+.scBarcodeBar {
+  flex: 1;
+  background: rgba(255,255,255,.3);
+  border-radius: 1px;
+  min-width: 2px;
+}
+
+.scTotalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.scTotalLabel {
+  font-size: .82rem;
+  color: rgba(255,255,255,.4);
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.scTotalAmt {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -.04em;
+}
+
+.scCheckoutBtn {
+  width: 100%;
+  height: 52px;
+  background: #d91f26;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-size: .9rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 8px 28px rgba(217,31,38,.35);
+  transition: background .2s, transform .2s, box-shadow .2s;
+}
+.scCheckoutBtn:hover {
+  background: #b81920;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(217,31,38,.45);
+}
+.scCheckoutIcon {
+  width: 22px; height: 17px;
+}

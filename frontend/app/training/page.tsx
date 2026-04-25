@@ -1,518 +1,332 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useLang } from "@/context/LangContext";
-import { site } from "@/lib/content";
 
-const txt = {
+const API = process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8000";
+
+const T = {
   en: {
     eyebrow: "Training Center",
     title: "Master the machine.",
     sub: "Real hands-on training from certified technicians inside our Chicago workshop.",
+    gallEyebrow: "Inside the Classroom",
+    gallTitle: "Where techs are made.",
+    gallSub: "Real students. Real tools. Real Chicago.",
+    coursesEyebrow: "Available Programs",
+    coursesSub: "Choose your path — every course is taught inside our live workshop.",
     enroll: "Enroll now",
-    spots: "spots left",
-    full: "Full",
-    weeks: "weeks",
-    hybrid: "Hybrid",
-    online: "Online",
-    presential: "In-person",
-    schedule: "Schedule",
-    price: "One-time payment",
-    // Portal
-    portalTitle: "Student Portal",
-    portalSub: "Access your enrolled modules",
-    portalEmail: "Your email",
-    portalRef: "Enrollment reference (SC-XXXX-XXXX)",
-    portalAccess: "Access portal",
-    portalChecking: "Checking...",
-    portalNotFound: "No enrollment found. Check your email and reference.",
-    portalPending: "Your payment is pending confirmation. Check back soon.",
-    // Enrollment form
-    enrollTitle: "Enroll in",
-    yourName: "Full name",
-    email: "Email",
-    phone: "Phone",
-    payMethod: "Payment method",
-    card: "Card / Apple Pay / Google Pay",
-    zelle: "Zelle",
-    bank: "Bank transfer",
-    submit: "Continue to payment",
-    submitting: "Processing...",
-    // Payment
-    payNow: "Pay",
-    zelleInstr: "Zelle instructions",
-    bankInstr: "Bank transfer instructions",
-    sendProof: "Send proof to: payments@safecar.com",
-    copyRef: "Copy",
-    copied: "Copied!",
-    enrollDone: "Enrollment confirmed!",
-    enrollRef: "Your reference:",
-    enrollNext: "Access will be granted after payment confirmation.",
-    back: "← Back",
-    err: "Something went wrong. Try again.",
+    wks: "wks",
+    open: "Open",
+    loading: "Loading programs...",
+    noModules: "No programs available right now. Check back soon.",
+    tag1: "Bilingual EN/ES",
+    tag2: "Hands-on only",
+    tag3: "Certified techs",
+    spots: "spots available",
+    fewSpots: "Only {n} spots left",
+    full: "Full — waitlist only",
   },
   es: {
     eyebrow: "Centro de Formación",
     title: "Domina la máquina.",
-    sub: "Formación práctica con técnicos certificados en nuestro taller de Chicago.",
+    sub: "Formación práctica con técnicos certificados dentro de nuestro taller en Chicago.",
+    gallEyebrow: "Dentro del Aula",
+    gallTitle: "Aquí nacen los técnicos.",
+    gallSub: "Estudiantes reales. Herramientas reales. Chicago real.",
+    coursesEyebrow: "Programas Disponibles",
+    coursesSub: "Elige tu camino — todos los cursos se imparten en nuestro taller activo.",
     enroll: "Inscribirse",
-    spots: "cupos disponibles",
-    full: "Completo",
-    weeks: "semanas",
-    hybrid: "Híbrido",
-    online: "Online",
-    presential: "Presencial",
-    schedule: "Horario",
-    price: "Pago único",
-    portalTitle: "Portal del Estudiante",
-    portalSub: "Accede a tus módulos inscritos",
-    portalEmail: "Tu correo",
-    portalRef: "Referencia (SC-XXXX-XXXX)",
-    portalAccess: "Acceder",
-    portalChecking: "Verificando...",
-    portalNotFound: "No se encontró inscripción. Verifica tu correo y referencia.",
-    portalPending: "Tu pago está pendiente. Vuelve pronto.",
-    enrollTitle: "Inscribirse en",
-    yourName: "Nombre completo",
-    email: "Correo",
-    phone: "Teléfono",
-    payMethod: "Método de pago",
-    card: "Tarjeta / Apple Pay / Google Pay",
-    zelle: "Zelle",
-    bank: "Transferencia bancaria",
-    submit: "Continuar al pago",
-    submitting: "Procesando...",
-    payNow: "Pagar",
-    zelleInstr: "Instrucciones Zelle",
-    bankInstr: "Instrucciones de transferencia",
-    sendProof: "Envía comprobante a: payments@safecar.com",
-    copyRef: "Copiar",
-    copied: "¡Copiado!",
-    enrollDone: "¡Inscripción confirmada!",
-    enrollRef: "Tu referencia:",
-    enrollNext: "Tendrás acceso una vez confirmado el pago.",
-    back: "← Volver",
-    err: "Algo salió mal. Intenta de nuevo.",
+    wks: "sem",
+    open: "Abierto",
+    loading: "Cargando programas...",
+    noModules: "No hay programas disponibles por ahora. Vuelve pronto.",
+    tag1: "Bilingüe EN/ES",
+    tag2: "100% práctica",
+    tag3: "Técnicos certificados",
+    spots: "plazas disponibles",
+    fewSpots: "Solo {n} plazas",
+    full: "Completo — solo lista de espera",
   },
 };
 
-interface Module {
-  id: number;
-  title: string;
-  title_es: string;
-  description: string;
-  description_es: string;
-  duration_weeks: number;
-  price: number;
-  mode: string;
-  max_students: number;
-  schedule: string;
-  image_url: string;
-  enrolled_count: number;
-}
+// Gallery — put photos in public/training/ named 1.jpg ... 6.jpg
+const GALLERY_COUNT = 6;
+const galleryPhotos = Array.from({ length: GALLERY_COUNT }, (_, i) => ({
+  src: `/training/${i + 1}.jpg`,
+  alt: `Training photo ${i + 1}`,
+}));
 
-type PayMethod = "card" | "zelle" | "bank_transfer";
-type View = "catalog" | "enroll" | "card_pay" | "instructions" | "done" | "portal" | "portal_result";
+const gallSizes = [
+  { gridColumn: "1 / 2", gridRow: "1 / 3" },
+  { gridColumn: "2 / 3", gridRow: "1 / 2" },
+  { gridColumn: "3 / 4", gridRow: "1 / 2" },
+  { gridColumn: "2 / 3", gridRow: "2 / 3" },
+  { gridColumn: "3 / 4", gridRow: "2 / 3" },
+  { gridColumn: "1 / 4", gridRow: "3 / 4" },
+];
 
-// ── Module card ────────────────────────────────────────────
-function ModuleCard({ mod, lang, t, onEnroll }: {
-  mod: Module; lang: string;
-  t: typeof txt["en"]; onEnroll: () => void;
+// ── Scan tile (same HUD effect as GallerySection) ─────────
+function ScanTile({ src, alt, index, onOpen }: {
+  src: string; alt: string; index: number; onOpen: () => void;
 }) {
-  const title = lang === "es" ? mod.title_es || mod.title : mod.title;
-  const desc  = lang === "es" ? mod.description_es || mod.description : mod.description;
-  const spots = mod.max_students - mod.enrolled_count;
-  const full  = spots <= 0;
-  const modeLabel = { hybrid: t.hybrid, online: t.online, presential: t.presential }[mod.mode] ?? mod.mode;
+  const ref    = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [scanned, setScanned] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setTimeout(() => setScanned(true), index * 120); obs.disconnect(); }
+    }, { threshold: 0.1 });
+    obs.observe(el);
+
+    const speed = 24 + (index % 4) * 8;
+    const tick = () => {
+      if (!ref.current || !imgRef.current) return;
+      const r = ref.current.getBoundingClientRect();
+      const vh = window.innerHeight;
+      if (r.bottom < 0 || r.top > vh) return;
+      const p = (vh - r.top) / (vh + r.height);
+      imgRef.current.style.transform = `scale(1.14) translateY(${(p - 0.5) * speed}px)`;
+    };
+    window.addEventListener("scroll", tick, { passive: true });
+    tick();
+    return () => { obs.disconnect(); window.removeEventListener("scroll", tick); };
+  }, [index]);
 
   return (
-    <article className="trnCard">
-      {mod.image_url && (
-        <div className="trnCardImg">
-          <img src={mod.image_url} alt={title} />
-        </div>
-      )}
-      <div className="trnCardBody">
-        <div className="trnCardMeta">
-          <span className="trnCardMode">{modeLabel}</span>
-          {mod.duration_weeks > 0 && (
-            <span className="trnCardDur">{mod.duration_weeks} {t.weeks}</span>
-          )}
-        </div>
-        <h3 className="trnCardTitle">{title}</h3>
-        <p className="trnCardDesc">{desc}</p>
-        {mod.schedule && (
-          <p className="trnCardSchedule">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6"/>
-              <path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-            </svg>
-            {mod.schedule}
-          </p>
-        )}
-        <div className="trnCardFooter">
-          <div>
-            <p className="trnCardPrice">${mod.price.toFixed(0)}</p>
-            <p className="trnCardPriceSub">{t.price}</p>
-          </div>
-          <div className="trnCardRight">
-            {!full && <p className="trnCardSpots">{spots} {t.spots}</p>}
-            <button
-              className={`partAddBtn ${full ? "" : ""}`}
-              onClick={onEnroll}
-              disabled={full}
-            >
-              {full ? t.full : t.enroll}
-            </button>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-// ── Enrollment + payment flow ──────────────────────────────
-function EnrollFlow({ mod, lang, t, onBack }: {
-  mod: Module; lang: string; t: typeof txt["en"]; onBack: () => void;
-}) {
-  const title = lang === "es" ? mod.title_es || mod.title : mod.title;
-  const [view, setView]           = useState<"form"|"card_pay"|"instructions"|"done">("form");
-  const [method, setMethod]       = useState<PayMethod>("card");
-  const [form, setForm]           = useState({ name:"", email:"", phone:"" });
-  const [enrollmentId, setEnrollmentId] = useState(0);
-  const [reference, setReference] = useState("");
-  const [clientSecret, setClientSecret] = useState("");
-  const [instructions, setInstructions] = useState<any>(null);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState("");
-  const [copied, setCopied]       = useState(false);
-
-  const f = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(p => ({ ...p, [k]: e.target.value }));
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true); setError("");
-    try {
-      const res = await fetch(`${site.apiBase}/training/enroll`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          module_id: mod.id,
-          student_name:  form.name,
-          student_email: form.email,
-          student_phone: form.phone,
-          payment_method: method,
-        }),
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.detail || "Error"); }
-      const enrollment = await res.json();
-      setEnrollmentId(enrollment.id);
-      setReference(enrollment.reference);
-
-      if (method === "card") {
-        const piRes = await fetch(`${site.apiBase}/training/enroll/${enrollment.id}/payment-intent`, {
-          method: "POST",
-        });
-        if (!piRes.ok) { setView("done"); return; }
-        const pi = await piRes.json();
-        setClientSecret(pi.client_secret);
-        setView("card_pay");
-      } else {
-        const instrRes = await fetch(`${site.apiBase}/training/enroll/${enrollment.id}/payment-instructions`);
-        setInstructions(await instrRes.json());
-        setView("instructions");
-      }
-    } catch(err: any) { setError(err.message || t.err); }
-    setLoading(false);
-  };
-
-  const copy = () => { navigator.clipboard.writeText(reference); setCopied(true); setTimeout(()=>setCopied(false),2000); };
-
-  if (view === "done") return (
-    <div className="checkoutDone">
-      <div className="checkoutDoneIcon">
-        <svg width="52" height="52" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="#22c55e" strokeWidth="1.8"/>
-          <path d="M8 12l3 3 5-5" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
+    <div
+      ref={ref}
+      className={`glryTile ${scanned ? "glryScanned" : ""}`}
+      onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onOpen()}
+      aria-label={alt}
+    >
+      <div className="glryScanLine" />
+      <div className="glryBracketTL" /><div className="glryBracketTR" />
+      <div className="glryBracketBL" /><div className="glryBracketBR" />
+      <span className="glryIndex">0{index + 1}</span>
+      <img ref={imgRef} src={src} alt={alt} className="glryTileImg" />
+      <div className="glryHover">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke="#d91f26" strokeWidth="2" strokeLinecap="round"/>
         </svg>
       </div>
-      <h2>{t.enrollDone}</h2>
-      <p className="checkoutDoneRef">{t.enrollRef} <strong>{reference}</strong></p>
-      <p className="checkoutDoneNext">{t.enrollNext}</p>
-      <button className="partAddBtn" onClick={onBack} style={{marginTop:8}}>{t.back}</button>
-    </div>
-  );
-
-  if (view === "instructions" && instructions) return (
-    <div className="trnInstrWrap">
-      <button className="checkoutBack" onClick={onBack}>{t.back}</button>
-      <div className="instrPanel">
-        <div className="instrHeader">
-          <span className="instrIcon">{instructions.method==="zelle"?"💸":"🏦"}</span>
-          <div>
-            <h3>{instructions.method==="zelle"?t.zelleInstr:t.bankInstr}</h3>
-            <p className="instrTotal">${instructions.total?.toFixed(2)}</p>
-          </div>
-        </div>
-        <ol className="instrList">
-          {instructions.instructions?.map((l:string,i:number)=><li key={i}>{l}</li>)}
-        </ol>
-        <div className="instrRef">
-          <span>Reference</span>
-          <div className="instrRefBox">
-            <code>{reference}</code>
-            <button type="button" onClick={copy} className="instrCopyBtn">
-              {copied?t.copied:t.copyRef}
-            </button>
-          </div>
-        </div>
-        <p className="instrProof">{t.sendProof}</p>
-      </div>
-    </div>
-  );
-
-  if (view === "card_pay" && clientSecret) return (
-    <div className="trnInstrWrap">
-      <button className="checkoutBack" onClick={() => setView("form")}>{t.back}</button>
-      <StripePayment clientSecret={clientSecret} total={mod.price} t={t}
-        onSuccess={() => setView("done")} onError={() => setError(t.err)} />
-      {error && <p className="ctStatusErr">{error}</p>}
-    </div>
-  );
-
-  return (
-    <div className="trnEnrollWrap">
-      <button className="checkoutBack" onClick={onBack}>{t.back}</button>
-      <h2 className="trnEnrollTitle">{t.enrollTitle} <span>{title}</span></h2>
-      <div className="trnEnrollGrid">
-        {/* Module summary */}
-        <div className="checkoutSummary">
-          <h3 style={{margin:"0 0 16px",fontSize:"0.95rem",color:"rgba(255,255,255,.5)",fontWeight:600}}>{title}</h3>
-          <div className="checkoutItem"><span>{mod.schedule||"—"}</span></div>
-          <div className="checkoutItemTotal">
-            <strong>Total</strong>
-            <strong>${mod.price.toFixed(2)}</strong>
-          </div>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="checkoutForm">
-          <input className="ctInput" placeholder={t.yourName} required value={form.name}  onChange={f("name")} />
-          <input className="ctInput" placeholder={t.email}    required type="email" value={form.email} onChange={f("email")} />
-          <input className="ctInput" placeholder={t.phone}    required type="tel"   value={form.phone} onChange={f("phone")} />
-
-          <p className="trnPayLabel">{t.payMethod}</p>
-          <div className="payMethodList">
-            {(["card","zelle","bank_transfer"] as PayMethod[]).map(m=>(
-              <button key={m} type="button"
-                className={`payMethodBtn ${method===m?"payMethodSelected":""}`}
-                onClick={()=>setMethod(m)}>
-                <span className="payMethodLabel">
-                  {m==="card"?t.card:m==="zelle"?t.zelle:t.bank}
-                </span>
-                {method===m&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{marginLeft:"auto",flexShrink:0}}>
-                  <circle cx="12" cy="12" r="9" fill="#d91f26"/>
-                  <path d="M8 12l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                </svg>}
-              </button>
-            ))}
-          </div>
-
-          <button type="submit" className="cartCheckoutBtn" disabled={loading}>
-            {loading?t.submitting:`${t.submit} — $${mod.price.toFixed(2)}`}
-          </button>
-          {error&&<p className="ctStatusErr">{error}</p>}
-        </form>
-      </div>
     </div>
   );
 }
 
-// ── Stripe inline ──────────────────────────────────────────
-function StripePayment({ clientSecret, total, t, onSuccess, onError }: any) {
-  const [stripe, setStripe]   = useState<any>(null);
-  const [elements, setElements] = useState<any>(null);
-  const [paying, setPaying]   = useState(false);
+// ── Hero ──────────────────────────────────────────────────
+function TrainingHero({ t }: { t: typeof T.en }) {
+  return (
+    <section className="trnSection" id="training-hero">
+      <img
+        src="https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?auto=format&fit=crop&w=2400&q=85"
+        alt="Workshop"
+        className="trnBg"
+      />
+      <div className="trnOverlay" />
+      <div className="container trnHeroLayout">
+        <p className="eyebrow">{t.eyebrow}</p>
+        <h1 className="trnHeroTitle">{t.title}</h1>
+        <p className="trnSub">{t.sub}</p>
+        <div className="trnTags">
+          <span className="trnTag">{t.tag1}</span>
+          <span className="trnTag">{t.tag2}</span>
+          <span className="trnTag">{t.tag3}</span>
+        </div>
+        <a href="#trn-courses" className="trnCta">
+          {t.coursesEyebrow} ↓
+        </a>
+      </div>
+    </section>
+  );
+}
+
+// ── Gallery ───────────────────────────────────────────────
+function TrainingGallery({ t }: { t: typeof T.en }) {
+  const [open, setOpen] = useState<number | null>(null);
+  const prev = useCallback(() => setOpen(i => i !== null ? (i - 1 + GALLERY_COUNT) % GALLERY_COUNT : null), []);
+  const next = useCallback(() => setOpen(i => i !== null ? (i + 1) % GALLERY_COUNT : null), []);
 
   useEffect(() => {
-    const key = process.env.NEXT_PUBLIC_STRIPE_KEY;
-    if (!key || !clientSecret) return;
-    const load = (S:any) => {
-      setStripe(S);
-      const els = S.elements({ clientSecret, appearance:{ theme:"night", variables:{ colorPrimary:"#d91f26", colorBackground:"#0e0f13", borderRadius:"12px" } } });
-      els.create("payment").mount("#trn-stripe-el");
-      setElements(els);
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(null);
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
     };
-    if ((window as any).Stripe) { load((window as any).Stripe(key)); return; }
-    const s = document.createElement("script");
-    s.src = "https://js.stripe.com/v3/";
-    s.onload = () => load((window as any).Stripe(key));
-    document.head.appendChild(s);
-  }, [clientSecret]);
-
-  const pay = async () => {
-    if (!stripe||!elements) return;
-    setPaying(true);
-    const { error } = await stripe.confirmPayment({ elements, confirmParams:{ return_url: window.location.href }, redirect:"if_required" });
-    if (error) { onError(); setPaying(false); }
-    else onSuccess();
-  };
-
-  return (
-    <div className="stripeWrap">
-      <div id="trn-stripe-el" className="stripeElement" />
-      <button type="button" className="cartCheckoutBtn" onClick={pay} disabled={paying||!stripe}>
-        {paying ? t.processing : `${t.payNow} $${total?.toFixed(2)}`}
-      </button>
-    </div>
-  );
-}
-
-// ── Student portal ─────────────────────────────────────────
-function StudentPortal({ t }: { t: typeof txt["en"] }) {
-  const [email, setEmail]   = useState("");
-  const [ref, setRef]       = useState("");
-  const [result, setResult] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError]   = useState("");
-
-  const check = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true); setError(""); setResult(null);
-    try {
-      const res = await fetch(`${site.apiBase}/training/portal`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, reference: ref }),
-      });
-      if (res.status === 404) { setError(t.portalNotFound); setLoading(false); return; }
-      setResult(await res.json());
-    } catch { setError(t.err); }
-    setLoading(false);
-  };
-
-  return (
-    <div className="trnPortal">
-      <div className="trnPortalHead">
-        <h2>{t.portalTitle}</h2>
-        <p>{t.portalSub}</p>
-      </div>
-      {!result ? (
-        <form className="trnPortalForm" onSubmit={check}>
-          <input className="ctInput" type="email" placeholder={t.portalEmail} required
-            value={email} onChange={e=>setEmail(e.target.value)} />
-          <input className="ctInput" placeholder={t.portalRef} required
-            value={ref} onChange={e=>setRef(e.target.value.toUpperCase())} style={{fontFamily:"monospace",letterSpacing:".06em"}} />
-          <button type="submit" className="cartCheckoutBtn" disabled={loading}>
-            {loading ? t.portalChecking : t.portalAccess}
-          </button>
-          {error && <p className="ctStatusErr">{error}</p>}
-        </form>
-      ) : result.access ? (
-        <div className="trnPortalResult">
-          <div className="trnPortalWelcome">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="9" stroke="#22c55e" strokeWidth="1.6"/>
-              <path d="M8 12l3 3 5-5" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
-            <div>
-              <h3>Welcome, {result.student_name}</h3>
-              <p>{result.module_title}</p>
-            </div>
-          </div>
-          <div className="trnPortalInfo">
-            <div className="trnPortalInfoRow">
-              <span>Schedule</span><strong>{result.schedule||"—"}</strong>
-            </div>
-            <div className="trnPortalInfoRow">
-              <span>Mode</span><strong style={{textTransform:"capitalize"}}>{result.mode}</strong>
-            </div>
-            {result.duration_weeks>0&&<div className="trnPortalInfoRow">
-              <span>Duration</span><strong>{result.duration_weeks} weeks</strong>
-            </div>}
-            <div className="trnPortalInfoRow">
-              <span>Reference</span><code style={{color:"#d91f26",fontFamily:"monospace"}}>{result.reference}</code>
-            </div>
-          </div>
-          <div className="trnPortalContact">
-            <p>For class materials and updates, contact us at <a href="tel:+18723545706" style={{color:"#d91f26"}}>+1 (872) 354-5706</a></p>
-          </div>
-        </div>
-      ) : (
-        <p className="ctStatusErr">{t.portalPending}</p>
-      )}
-    </div>
-  );
-}
-
-// ── Main page ──────────────────────────────────────────────
-export default function TrainingPage() {
-  const { lang } = useLang();
-  const t = txt[lang];
-
-  const [modules, setModules]     = useState<Module[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [selected, setSelected]   = useState<Module | null>(null);
-  const [view, setView]           = useState<"catalog"|"enroll"|"portal">("catalog");
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [prev, next]);
 
   useEffect(() => {
-    fetch(`${site.apiBase}/training/modules`)
+    document.body.style.overflow = open !== null ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  return (
+    <section className="glrySection" id="trn-gallery">
+      <div className="container">
+        <div className="glryHeader">
+          <p className="eyebrow">{t.gallEyebrow}</p>
+          <h2 className="glryTitle">{t.gallTitle}</h2>
+          <p className="glrySub">{t.gallSub}</p>
+        </div>
+
+        <div className="trnMasonry">
+          {galleryPhotos.map((p, i) => (
+            <div key={i} className="glryCell" style={gallSizes[i] as React.CSSProperties}>
+              <ScanTile src={p.src} alt={p.alt} index={i} onOpen={() => setOpen(i)} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {open !== null && (
+        <div className="glryLb" onClick={() => setOpen(null)}>
+          <button className="glryLbClose" onClick={() => setOpen(null)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+          <button className="glryLbNav glryLbPrev" onClick={e => { e.stopPropagation(); prev(); }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+          <div className="glryLbFrame" onClick={e => e.stopPropagation()}>
+            <div className="glryLbBracketTL" /><div className="glryLbBracketTR" />
+            <div className="glryLbBracketBL" /><div className="glryLbBracketBR" />
+            <img src={galleryPhotos[open].src} alt={galleryPhotos[open].alt} className="glryLbImg" />
+          </div>
+          <button className="glryLbNav glryLbNext" onClick={e => { e.stopPropagation(); next(); }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+          <p className="glryLbCount">{open + 1} / {GALLERY_COUNT}</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ── Course card ───────────────────────────────────────────
+function CourseCard({ module, lang, t }: { module: any; lang: "en" | "es"; t: typeof T.en }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [vis, setVis] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVis(true); obs.disconnect(); }
+    }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const title = lang === "es" && module.title_es ? module.title_es : module.title;
+  const desc  = lang === "es" && module.description_es ? module.description_es : module.description;
+  const dur   = module.duration_weeks > 0 ? `${module.duration_weeks} ${t.wks}` : t.open;
+  const spotsLeft = module.max_students - (module.enrolled_count || 0);
+
+  return (
+    <div ref={ref} className={`trnCourseCard ${vis ? "trnCourseCardVis" : ""}`}>
+      <div className="trnCourseImg">
+        {module.image_url
+          ? <img src={module.image_url} alt={title} />
+          : (
+            <div className="trnCourseImgFallback">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                  stroke="#d91f26" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          )
+        }
+        <span className="trnCourseMode">{module.mode}</span>
+      </div>
+
+      <div className="trnCourseBody">
+        <div className="trnCourseMeta">
+          <span className="trnCourseDur">⏱ {dur}</span>
+          {module.schedule && <span className="trnCourseSched">📅 {module.schedule}</span>}
+        </div>
+        <h3 className="trnCourseTitle">{title}</h3>
+        {desc && <p className="trnCourseDesc">{desc}</p>}
+
+        <div className="trnCourseFooter">
+          <div>
+            <p className="trnCoursePrice">${module.price?.toFixed(2)}</p>
+            {spotsLeft > 0
+              ? <p className="trnCourseSpots" style={{ color: spotsLeft < 5 ? "#f59e0b" : "#16a34a" }}>
+                  {spotsLeft < 5
+                    ? t.fewSpots.replace("{n}", String(spotsLeft))
+                    : `${spotsLeft} ${t.spots}`}
+                </p>
+              : <p className="trnCourseSpots" style={{ color: "#ef4444" }}>{t.full}</p>
+            }
+          </div>
+          <a href="/training/enroll" className="trnCourseBtn">{t.enroll} →</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Courses section ───────────────────────────────────────
+function TrainingCourses({ t, lang }: { t: typeof T.en; lang: "en" | "es" }) {
+  const [modules, setModules] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API}/training/modules`)
       .then(r => r.json())
       .then(data => { setModules(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
-  if (view === "enroll" && selected) return (
-    <main className="innerPage">
-      <div className="container">
-        <EnrollFlow mod={selected} lang={lang} t={t} onBack={() => setView("catalog")} />
-      </div>
-    </main>
-  );
-
-  if (view === "portal") return (
-    <main className="innerPage">
-      <div className="container">
-        <button className="checkoutBack" onClick={() => setView("catalog")}>{t.back}</button>
-        <StudentPortal t={t} />
-      </div>
-    </main>
-  );
-
   return (
-    <main className="innerPage trnPage">
+    <section className="trnCoursesSection" id="trn-courses">
       <div className="container">
-        {/* Hero */}
-        <div className="trnHero">
-          <div className="trnHeroLeft">
-            <p className="eyebrow">{t.eyebrow}</p>
-            <h1 className="trnHeroTitle">{t.title}</h1>
-            <p className="trnHeroSub">{t.sub}</p>
-            <button className="trnPortalBtn" onClick={() => setView("portal")}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.6"/>
-                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-              </svg>
-              {t.portalTitle}
-            </button>
-          </div>
+        <div className="glryHeader">
+          <p className="eyebrow">{t.coursesEyebrow}</p>
+          <h2 className="glryTitle">{t.coursesSub}</h2>
         </div>
 
-        {/* Modules */}
         {loading ? (
-          <div className="trnGrid">
-            {[...Array(4)].map((_,i) => <div key={i} className="partSkeleton" style={{height:360}} />)}
+          <div className="trnCoursesGrid">
+            {[1,2,3,4].map(i => <div key={i} className="trnCourseSkeleton" />)}
           </div>
+        ) : modules.length === 0 ? (
+          <p className="trnCoursesEmpty">{t.noModules}</p>
         ) : (
-          <div className="trnGrid">
-            {modules.map(mod => (
-              <ModuleCard key={mod.id} mod={mod} lang={lang} t={t}
-                onEnroll={() => { setSelected(mod); setView("enroll"); }} />
+          <div className="trnCoursesGrid">
+            {modules.map(m => (
+              <CourseCard key={m.id} module={m} lang={lang} t={t} />
             ))}
           </div>
         )}
       </div>
-    </main>
+    </section>
+  );
+}
+
+// ── Page root ─────────────────────────────────────────────
+export default function TrainingPage() {
+  const { lang } = useLang();
+  const t = T[lang as "en" | "es"] ?? T.en;
+
+  return (
+    <>
+      <TrainingHero t={t} />
+      <TrainingGallery t={t} />
+      <TrainingCourses t={t} lang={lang as "en" | "es"} />
+    </>
   );
 }
