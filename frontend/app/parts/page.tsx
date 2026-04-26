@@ -43,20 +43,13 @@ interface Part {
   brand:string; price:number; stock:number; image_url:string; compatible_vehicles:string;
 }
 
-// ── Flying item animation ──────────────────────────────────
 type FlyItem = { id:number; x:number; y:number; img:string };
 
-// ── SUPERMARKET CART ICON (SVG) ────────────────────────────
+// ── Cart SVG icon ──────────────────────────────────────────
 function CartIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 64 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Cart body */}
       <path d="M4 4H12L18 32H50L56 12H18" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
-      {/* Items in cart (visible when has items) */}
-      <rect className="cartItemBar1" x="22" y="16" width="8" height="10" rx="2" fill="currentColor" opacity="0"/>
-      <rect className="cartItemBar2" x="32" y="16" width="8" height="10" rx="2" fill="currentColor" opacity="0"/>
-      <rect className="cartItemBar3" x="42" y="16" width="6" height="10" rx="2" fill="currentColor" opacity="0"/>
-      {/* Wheels */}
       <circle cx="24" cy="40" r="4" stroke="currentColor" strokeWidth="3"/>
       <circle cx="44" cy="40" r="4" stroke="currentColor" strokeWidth="3"/>
     </svg>
@@ -91,8 +84,7 @@ function PartCard({ part, t, lang, onFly }: {
           ? <img src={part.image_url} alt={part.name} />
           : <div className="partImgPlaceholder">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"
-                  stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
               </svg>
             </div>
         }
@@ -121,137 +113,150 @@ function PartCard({ part, t, lang, onFly }: {
   );
 }
 
-// ── SUPERMARKET CART DRAWER ────────────────────────────────
-function SuperCartDrawer({ open, onClose, onCheckout, t, shake }: {
-  open:boolean; onClose:()=>void; onCheckout:()=>void;
-  t:typeof txt["en"]; shake:boolean;
+// ── FLOATING CART ─────────────────────────────────────────
+function FloatingCart({ t, onCheckout, floatRef, pulse }: {
+  t: typeof txt["en"];
+  onCheckout: () => void;
+  floatRef: React.RefObject<HTMLDivElement>;
+  pulse: boolean;
 }) {
-  const { items, total, remove, update } = useCart();
-  const [justAdded, setJustAdded] = useState<number|null>(null);
+  const { items, total, remove, update, count } = useCart();
+  const [open, setOpen] = useState(false);
+  const [shake, setShake] = useState(false);
 
+  // When pulse fires (new item added), shake + briefly open
   useEffect(() => {
-    if (shake) {
-      const last = items[items.length - 1];
-      if (last) { setJustAdded(last.id); setTimeout(() => setJustAdded(null), 800); }
+    if (pulse) {
+      setShake(true);
+      setTimeout(() => setShake(false), 600);
     }
-  }, [shake, items]);
+  }, [pulse]);
+
+  // Auto-open drawer when first item added
+  const prevCount = useRef(0);
+  useEffect(() => {
+    if (count > prevCount.current && prevCount.current === 0) {
+      setOpen(true);
+    }
+    prevCount.current = count;
+  }, [count]);
 
   return (
     <>
-      {open && <div className="cartBackdrop" onClick={onClose} />}
-      <div className={`scDrawer ${open ? "scDrawerOpen" : ""}`}>
+      {/* Backdrop */}
+      {open && (
+        <div
+          className="fcBackdrop"
+          onClick={() => setOpen(false)}
+        />
+      )}
 
-        {/* Header */}
-        <div className="scHead">
-          <div className="scHeadLeft">
-            <CartIcon className="scHeadIcon" />
-            <div>
-              <h2 className="scHeadTitle">{t.cart}</h2>
-              <p className="scHeadSub">{items.length} {items.length === 1 ? "item" : "items"}</p>
-            </div>
+      {/* Floating container */}
+      <div
+        ref={floatRef}
+        className={`fcWrap ${open ? "fcWrapOpen" : ""} ${shake ? "fcShake" : ""} ${pulse ? "fcPulse" : ""}`}
+      >
+        {/* Toggle button — always visible */}
+        <button
+          className={`fcToggle ${pulse ? "fcTogglePulse" : ""}`}
+          onClick={() => setOpen(o => !o)}
+          aria-label="Toggle cart"
+        >
+          <div className="fcToggleInner">
+            <CartIcon className="fcToggleIcon" />
+            {count > 0 && (
+              <span className={`fcBadge ${pulse ? "fcBadgePop" : ""}`}>{count}</span>
+            )}
           </div>
-          <button onClick={onClose} className="scClose">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-            </svg>
-          </button>
-        </div>
+          {/* Breathing ring when items inside */}
+          {count > 0 && <div className="fcBreathRing" />}
+        </button>
 
-        {/* Conveyor belt track */}
-        <div className="scConveyor">
-          <div className="scConveyorBelt" />
-          <div className="scConveyorLine" />
-        </div>
-
-        {/* Items */}
-        {items.length === 0 ? (
-          <div className="scEmpty">
-            <CartIcon className="scEmptyIcon" />
-            <p>{t.empty}</p>
-          </div>
-        ) : (
-          <>
-            <div className="scItems">
-              {items.map((item, idx) => (
-                <div
-                  key={item.id}
-                  className={`scItem ${justAdded === item.id ? "scItemNew" : ""}`}
-                  style={{ animationDelay: `${idx * 0.05}s` }}
-                >
-                  {/* Product image */}
-                  <div className="scItemThumb">
-                    {item.image_url
-                      ? <img src={item.image_url} alt={item.name} />
-                      : <div className="scItemThumbFallback">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"
-                              stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                          </svg>
-                        </div>
-                    }
-                  </div>
-
-                  {/* Info */}
-                  <div className="scItemInfo">
-                    <p className="scItemName">{item.name}</p>
-                    <p className="scItemUnit">${item.price.toFixed(2)} each</p>
-                  </div>
-
-                  {/* Qty stepper */}
-                  <div className="scQty">
-                    <button className="scQtyBtn" onClick={() => update(item.id, item.quantity - 1)}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 12h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                      </svg>
-                    </button>
-                    <span className="scQtyNum">{item.quantity}</span>
-                    <button className="scQtyBtn" onClick={() => update(item.id, item.quantity + 1)}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Subtotal */}
-                  <p className="scItemTotal">${(item.price * item.quantity).toFixed(2)}</p>
-
-                  {/* Remove */}
-                  <button className="scItemRemove" onClick={() => remove(item.id)} title="Remove">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-                </div>
-              ))}
+        {/* Drawer panel */}
+        <div className={`fcDrawer ${open ? "fcDrawerOpen" : ""}`}>
+          {/* Header */}
+          <div className="fcHead">
+            <div className="fcHeadLeft">
+              <CartIcon className="fcHeadIcon" />
+              <div>
+                <h2 className="fcHeadTitle">{t.cart}</h2>
+                <p className="fcHeadSub">{count} {count === 1 ? "item" : "items"}</p>
+              </div>
             </div>
+            <button className="fcClose" onClick={() => setOpen(false)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
 
-            {/* Footer */}
-            <div className="scFooter">
-              {/* Divider with barcode effect */}
-              <div className="scBarcode">
-                {Array.from({length: 28}).map((_,i) => (
-                  <div key={i} className="scBarcodeBar" style={{
-                    height: `${8 + Math.sin(i*1.3)*6}px`,
-                    opacity: 0.15 + (i%3)*0.1,
-                  }}/>
+          {/* Conveyor belt */}
+          <div className="fcConveyor">
+            <div className="fcConveyorBelt" />
+          </div>
+
+          {/* Items */}
+          {items.length === 0 ? (
+            <div className="fcEmpty">
+              <CartIcon className="fcEmptyIcon" />
+              <p>{t.empty}</p>
+            </div>
+          ) : (
+            <>
+              <div className="fcItems">
+                {items.map((item, idx) => (
+                  <div key={item.id} className="fcItem" style={{ animationDelay: `${idx * 0.04}s` }}>
+                    <div className="fcItemThumb">
+                      {item.image_url
+                        ? <img src={item.image_url} alt={item.name} />
+                        : <div className="fcItemThumbFallback">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                              <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                            </svg>
+                          </div>
+                      }
+                    </div>
+                    <div className="fcItemInfo">
+                      <p className="fcItemName">{item.name}</p>
+                      <p className="fcItemUnit">${item.price.toFixed(2)} ea.</p>
+                    </div>
+                    <div className="fcQty">
+                      <button className="fcQtyBtn" onClick={() => update(item.id, item.quantity - 1)}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                      </button>
+                      <span className="fcQtyNum">{item.quantity}</span>
+                      <button className="fcQtyBtn" onClick={() => update(item.id, item.quantity + 1)}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                      </button>
+                    </div>
+                    <p className="fcItemTotal">${(item.price * item.quantity).toFixed(2)}</p>
+                    <button className="fcItemRemove" onClick={() => remove(item.id)}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
+                  </div>
                 ))}
               </div>
 
-              <div className="scTotalRow">
-                <span className="scTotalLabel">{t.total}</span>
-                <span className="scTotalAmt">${total.toFixed(2)}</span>
+              {/* Footer */}
+              <div className="fcFooter">
+                <div className="fcBarcode">
+                  {Array.from({length: 24}).map((_,i) => (
+                    <div key={i} className="fcBarcodeBar" style={{ height:`${7+Math.sin(i*1.4)*5}px`, opacity: 0.12+(i%3)*0.09 }}/>
+                  ))}
+                </div>
+                <div className="fcTotalRow">
+                  <span className="fcTotalLabel">{t.total}</span>
+                  <span className="fcTotalAmt">${total.toFixed(2)}</span>
+                </div>
+                <button className="fcCheckoutBtn" onClick={() => { setOpen(false); onCheckout(); }}>
+                  <CartIcon className="fcCheckoutIcon" />
+                  {t.checkout}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
               </div>
-
-              <button className="scCheckoutBtn" onClick={onCheckout}>
-                <CartIcon className="scCheckoutIcon" />
-                {t.checkout}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </>
   );
@@ -263,20 +268,16 @@ export default function PartsPage() {
   const t = txt[lang];
   const { count } = useCart();
 
-  const [parts, setParts]       = useState<Part[]>([]);
+  const [parts, setParts]         = useState<Part[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [loading, setLoading]   = useState(true);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [checkout, setCheckout] = useState(false);
+  const [loading, setLoading]     = useState(true);
+  const [checkout, setCheckout]   = useState(false);
+  const [pulse, setPulse]         = useState(false);
 
-  // Cart button animation states
-  const [cartShake, setCartShake]   = useState(false);
-  const [cartBounce, setCartBounce] = useState(false);
-
-  // Flying item particles
-  const [flyItems, setFlyItems] = useState<FlyItem[]>([]);
-  const cartBtnRef = useRef<HTMLButtonElement>(null);
+  const [flyItems, setFlyItems]   = useState<FlyItem[]>([]);
+  const floatRef  = useRef<HTMLDivElement>(null);
   const flyCounter = useRef(0);
+  const prevCount = useRef(count);
 
   const [category, setCategory] = useState("");
   const [search, setSearch]     = useState("");
@@ -302,17 +303,25 @@ export default function PartsPage() {
       .then(r => r.json()).then(setCategories).catch(() => {});
   }, []);
 
-  // Flying item: animate from button → cart button
+  // Detect new item added → trigger pulse
+  useEffect(() => {
+    if (count > prevCount.current) {
+      setPulse(true);
+      setTimeout(() => setPulse(false), 900);
+    }
+    prevCount.current = count;
+  }, [count]);
+
+  // Flying item animation toward floating cart
   const handleFly = useCallback((fromX: number, fromY: number, img: string) => {
-    if (!cartBtnRef.current) return;
-    const cartR = cartBtnRef.current.getBoundingClientRect();
-    const toX = cartR.left + cartR.width / 2;
-    const toY = cartR.top + cartR.height / 2;
+    if (!floatRef.current) return;
+    const r = floatRef.current.getBoundingClientRect();
+    const toX = r.left + r.width / 2;
+    const toY = r.top + r.height / 2;
 
     const id = ++flyCounter.current;
     setFlyItems(prev => [...prev, { id, x: fromX, y: fromY, img }]);
 
-    // Animate via CSS custom properties on a style tag approach — we set inline style on the element
     setTimeout(() => {
       const el = document.getElementById(`fly-${id}`);
       if (el) {
@@ -322,14 +331,6 @@ export default function PartsPage() {
       }
     }, 20);
 
-    // Bounce cart button when item arrives
-    setTimeout(() => {
-      setCartBounce(true);
-      setCartShake(true);
-      setTimeout(() => { setCartBounce(false); setCartShake(false); }, 500);
-    }, 550);
-
-    // Remove after animation
     setTimeout(() => setFlyItems(prev => prev.filter(f => f.id !== id)), 700);
   }, []);
 
@@ -345,21 +346,15 @@ export default function PartsPage() {
 
   return (
     <main className="innerPage">
-      {/* Flying items layer */}
+      {/* Flying particles */}
       <div className="flyLayer" aria-hidden="true">
         {flyItems.map(fi => (
-          <div
-            key={fi.id}
-            id={`fly-${fi.id}`}
-            className="flyItem"
-            style={{ left: fi.x, top: fi.y }}
-          >
+          <div key={fi.id} id={`fly-${fi.id}`} className="flyItem" style={{ left: fi.x, top: fi.y }}>
             {fi.img
               ? <img src={fi.img} alt="" />
               : <div className="flyItemFallback">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"
-                      stroke="#d91f26" strokeWidth="1.5" fill="none"/>
+                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="#d91f26" strokeWidth="1.5" fill="none"/>
                   </svg>
                 </div>
             }
@@ -375,21 +370,6 @@ export default function PartsPage() {
             <h1 className="partsTitle">{t.title}</h1>
             <p className="partsSub">{t.sub}</p>
           </div>
-
-          {/* Supermarket cart button */}
-          <button
-            ref={cartBtnRef}
-            className={`scCartBtn ${cartBounce ? "scCartBtnBounce" : ""}`}
-            onClick={() => setCartOpen(true)}
-          >
-            <div className={`scCartBtnIcon ${cartShake ? "scCartShake" : ""}`}>
-              <CartIcon className="scCartSvg" />
-              {count > 0 && (
-                <span className={`scCartBadge ${cartBounce ? "scBadgePop" : ""}`}>{count}</span>
-              )}
-            </div>
-            <span>{t.cart}</span>
-          </button>
         </div>
 
         {/* Filters */}
@@ -429,12 +409,12 @@ export default function PartsPage() {
         }
       </div>
 
-      <SuperCartDrawer
-        open={cartOpen}
-        onClose={() => setCartOpen(false)}
-        onCheckout={() => { setCartOpen(false); setCheckout(true); }}
+      {/* Floating cart — always visible, bottom right */}
+      <FloatingCart
         t={t}
-        shake={cartShake}
+        onCheckout={() => setCheckout(true)}
+        floatRef={floatRef}
+        pulse={pulse}
       />
     </main>
   );
