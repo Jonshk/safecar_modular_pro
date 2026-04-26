@@ -31,7 +31,7 @@ const txt = {
     orderNext: "We'll contact you to confirm shipping.",
     zelleInstructions: "Zelle payment instructions",
     bankInstructions: "Bank transfer instructions",
-    sendProof: "Send proof to: payments@safecar.com",
+    sendProof: "Send proof to: safecarautomotive@gmail.com",
     copyRef: "Copy reference",
     copied: "Copied!",
     err: "Something went wrong. Please try again.",
@@ -61,7 +61,7 @@ const txt = {
     orderNext: "Te contactaremos para confirmar el envío.",
     zelleInstructions: "Instrucciones Zelle",
     bankInstructions: "Instrucciones de transferencia",
-    sendProof: "Envía el comprobante a: payments@safecar.com",
+    sendProof: "Envía el comprobante a: safecarautomotive@gmail.com",
     copyRef: "Copiar referencia",
     copied: "¡Copiado!",
     err: "Algo salió mal. Intenta de nuevo.",
@@ -75,7 +75,6 @@ interface Instructions {
   reference: string;
   total: number;
   instructions: string[];
-  zelle_email?: string;
   zelle_phone?: string;
   bank_name?: string;
   account?: string;
@@ -83,7 +82,6 @@ interface Instructions {
   holder?: string;
 }
 
-// ── Payment method selector ────────────────────────────────
 function MethodButton({ id, label, sub, selected, onClick }: {
   id: PayMethod; label: string; sub: string;
   selected: boolean; onClick: () => void;
@@ -110,11 +108,7 @@ function MethodButton({ id, label, sub, selected, onClick }: {
   };
 
   return (
-    <button
-      type="button"
-      className={`payMethodBtn ${selected ? "payMethodSelected" : ""}`}
-      onClick={onClick}
-    >
+    <button type="button" className={`payMethodBtn ${selected ? "payMethodSelected" : ""}`} onClick={onClick}>
       <span className="payMethodIcon">{icons[id]}</span>
       <span className="payMethodText">
         <span className="payMethodLabel">{label}</span>
@@ -132,7 +126,6 @@ function MethodButton({ id, label, sub, selected, onClick }: {
   );
 }
 
-// ── Stripe card form ────────────────────────────────────────
 function StripeForm({ clientSecret, onSuccess, onError, total, t }: {
   clientSecret: string; onSuccess: () => void;
   onError: () => void; total: number; t: typeof txt["en"];
@@ -145,12 +138,7 @@ function StripeForm({ clientSecret, onSuccess, onError, total, t }: {
     if (!clientSecret) return;
     const key = process.env.NEXT_PUBLIC_STRIPE_KEY;
     if (!key) return;
-
-    // Load Stripe.js
-    if ((window as any).Stripe) {
-      initStripe((window as any).Stripe(key));
-      return;
-    }
+    if ((window as any).Stripe) { initStripe((window as any).Stripe(key)); return; }
     const script = document.createElement("script");
     script.src = "https://js.stripe.com/v3/";
     script.onload = () => initStripe((window as any).Stripe(key));
@@ -162,14 +150,7 @@ function StripeForm({ clientSecret, onSuccess, onError, total, t }: {
         clientSecret,
         appearance: {
           theme: "night",
-          variables: {
-            colorPrimary: "#d91f26",
-            colorBackground: "#0e0f13",
-            colorText: "#ffffff",
-            colorDanger: "#f87171",
-            fontFamily: "Arial, sans-serif",
-            borderRadius: "12px",
-          },
+          variables: { colorPrimary: "#d91f26", colorBackground: "#0e0f13", colorText: "#ffffff", colorDanger: "#f87171", fontFamily: "Arial, sans-serif", borderRadius: "12px" },
         },
       });
       const payEl = els.create("payment");
@@ -193,19 +174,13 @@ function StripeForm({ clientSecret, onSuccess, onError, total, t }: {
   return (
     <div className="stripeWrap">
       <div id="stripe-payment-element" className="stripeElement" />
-      <button
-        type="button"
-        className="cartCheckoutBtn"
-        onClick={handlePay}
-        disabled={paying || !stripe}
-      >
+      <button type="button" className="cartCheckoutBtn" onClick={handlePay} disabled={paying || !stripe}>
         {paying ? t.processing : `${t.payNow} $${total.toFixed(2)}`}
       </button>
     </div>
   );
 }
 
-// ── Manual payment instructions ────────────────────────────
 function InstructionsPanel({ data, t }: { data: Instructions; t: typeof txt["en"] }) {
   const [copied, setCopied] = useState(false);
 
@@ -218,21 +193,15 @@ function InstructionsPanel({ data, t }: { data: Instructions; t: typeof txt["en"
   return (
     <div className="instrPanel">
       <div className="instrHeader">
-        <span className="instrIcon">
-          {data.method === "zelle" ? "💸" : "🏦"}
-        </span>
+        <span className="instrIcon">{data.method === "zelle" ? "💸" : "🏦"}</span>
         <div>
           <h3>{data.method === "zelle" ? t.zelleInstructions : t.bankInstructions}</h3>
           <p className="instrTotal">${data.total.toFixed(2)}</p>
         </div>
       </div>
-
       <ol className="instrList">
-        {data.instructions.map((line, i) => (
-          <li key={i}>{line}</li>
-        ))}
+        {data.instructions.map((line, i) => <li key={i}>{line}</li>)}
       </ol>
-
       <div className="instrRef">
         <span>Reference</span>
         <div className="instrRefBox">
@@ -242,13 +211,11 @@ function InstructionsPanel({ data, t }: { data: Instructions; t: typeof txt["en"
           </button>
         </div>
       </div>
-
       <p className="instrProof">{t.sendProof}</p>
     </div>
   );
 }
 
-// ── Main Checkout ──────────────────────────────────────────
 export default function Checkout({ onBack }: { onBack: () => void }) {
   const { lang } = useLang();
   const t = txt[lang];
@@ -268,60 +235,44 @@ export default function Checkout({ onBack }: { onBack: () => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-
+    setLoading(true); setError("");
     try {
-      // Create order
       const res = await fetch(`${site.apiBase}/orders/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer_name:    form.name,
-          customer_email:   form.email,
-          customer_phone:   form.phone,
-          shipping_address: form.address,
-          payment_method:   method,
+          customer_name: form.name, customer_email: form.email,
+          customer_phone: form.phone, shipping_address: form.address,
+          payment_method: method,
           items: items.map(i => ({ part_id: i.id, quantity: i.quantity })),
         }),
       });
-
       if (!res.ok) throw new Error(await res.text());
       const order = await res.json();
       setReference(order.reference);
 
       if (method === "card") {
-        // Get Stripe payment intent
         const piRes = await fetch(`${site.apiBase}/orders/payment-intent`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ order_id: order.id }),
         });
-
-        if (!piRes.ok) {
-          // Stripe not configured — mark done anyway
-          clear();
-          setStep("done");
-          return;
-        }
-
+        if (!piRes.ok) { clear(); setStep("done"); return; }
         const pi = await piRes.json();
         setClientSecret(pi.client_secret);
         setStep("card_pay");
       } else {
-        // Zelle or bank transfer — get instructions
         const instrRes = await fetch(`${site.apiBase}/orders/${order.id}/payment-instructions`);
         const instr = await instrRes.json();
         setInstructions(instr);
         setStep("instructions");
       }
-    } catch (err) {
+    } catch {
       setError(t.err);
     }
     setLoading(false);
   };
 
-  // ── Done screen ──
   if (step === "done") {
     return (
       <div className="checkoutDone">
@@ -341,13 +292,11 @@ export default function Checkout({ onBack }: { onBack: () => void }) {
     );
   }
 
-  // ── Instructions screen (Zelle / Bank) ──
   if (step === "instructions" && instructions) {
     return (
       <div className="checkoutWrap">
         <button className="checkoutBack" onClick={onBack}>{t.back}</button>
         <div className="instrGrid">
-          {/* Order summary */}
           <div className="checkoutSummary">
             <h2>{t.orderSummary}</h2>
             {items.map(i => (
@@ -367,7 +316,6 @@ export default function Checkout({ onBack }: { onBack: () => void }) {
     );
   }
 
-  // ── Card payment screen ──
   if (step === "card_pay") {
     return (
       <div className="checkoutWrap">
@@ -402,13 +350,10 @@ export default function Checkout({ onBack }: { onBack: () => void }) {
     );
   }
 
-  // ── Main form ──
   return (
     <div className="checkoutWrap">
       <button className="checkoutBack" onClick={onBack}>{t.back}</button>
-
       <form className="checkoutMainGrid" onSubmit={handleSubmit}>
-        {/* LEFT — info + method */}
         <div className="checkoutLeft">
           <h2>{t.yourInfo}</h2>
           <div className="checkoutFields">
@@ -418,16 +363,13 @@ export default function Checkout({ onBack }: { onBack: () => void }) {
             <textarea className="ctInput ctTextarea" placeholder={t.address} required rows={3}
               value={form.address} onChange={f("address")} />
           </div>
-
           <h2 style={{ marginTop: 32, marginBottom: 16 }}>{t.payMethod}</h2>
           <div className="payMethodList">
-            <MethodButton id="card"          label={t.card}  sub={t.cardSub}  selected={method === "card"}          onClick={() => setMethod("card")} />
-            <MethodButton id="zelle"         label={t.zelle} sub={t.zelleSub} selected={method === "zelle"}         onClick={() => setMethod("zelle")} />
-            <MethodButton id="bank_transfer" label={t.bank}  sub={t.bankSub}  selected={method === "bank_transfer"} onClick={() => setMethod("bank_transfer")} />
+            <MethodButton id="card"          label={t.card}  sub={t.cardSub}  selected={method==="card"}          onClick={() => setMethod("card")} />
+            <MethodButton id="zelle"         label={t.zelle} sub={t.zelleSub} selected={method==="zelle"}         onClick={() => setMethod("zelle")} />
+            <MethodButton id="bank_transfer" label={t.bank}  sub={t.bankSub}  selected={method==="bank_transfer"} onClick={() => setMethod("bank_transfer")} />
           </div>
         </div>
-
-        {/* RIGHT — summary + submit */}
         <div className="checkoutRight">
           <div className="checkoutSummary">
             <h2>{t.orderSummary}</h2>
@@ -442,7 +384,6 @@ export default function Checkout({ onBack }: { onBack: () => void }) {
               <strong>${total.toFixed(2)}</strong>
             </div>
           </div>
-
           <button type="submit" className="cartCheckoutBtn" disabled={loading} style={{ marginTop: 16 }}>
             {loading ? t.processing : `${t.placeOrder} — $${total.toFixed(2)}`}
           </button>
