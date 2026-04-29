@@ -13,22 +13,12 @@ from app.routers.auth import router as auth_router
 from app.routers.upload import router as upload_router
 import os
 
-app = FastAPI(title="Safe Car API", version="4.1.0")
-
-allowed_origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-    "https://www.autotecnicasafecar.com",
-    "https://autotecnicasafecar.com",
-    "https://safecar-modular-pro.vercel.app",
-]
+app = FastAPI(title="Safe Car API", version="4.1.1")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,   # debe ser False cuando allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -44,7 +34,7 @@ def startup_event():
 
 @app.get("/")
 def root():
-    return {"message": "Safe Car API v4.1 running"}
+    return {"message": "Safe Car API v4.1.1 running"}
 
 @app.get("/health")
 def health():
