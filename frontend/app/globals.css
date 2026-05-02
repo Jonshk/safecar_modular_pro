@@ -4625,3 +4625,13 @@ select option {
 @media (max-width: 520px) {
   .fcDrawer { width: calc(100vw - 20px); }
 }
+
+/* HERO SLIDESHOW — override */
+.heroImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+}
