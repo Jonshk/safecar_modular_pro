@@ -1,13 +1,19 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from fastapi.staticfiles import StaticFiles
-import os, uuid, shutil
+import os, uuid
+import cloudinary
+import cloudinary.uploader
 
 router = APIRouter(prefix="/upload", tags=["upload"])
 
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "static", "images")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+# ── Cloudinary config ──────────────────────────────────────
+cloudinary.config(
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME", "dqerjbatr"),
+    api_key    = os.getenv("CLOUDINARY_API_KEY",    "319357858337649"),
+    api_secret = os.getenv("CLOUDINARY_API_SECRET", "HWQp0TVcLzHevovtJV6WNaLN3tk"),
+    secure     = True,
+)
 
-ALLOWED = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+ALLOWED  = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 MAX_SIZE = 5 * 1024 * 1024  # 5MB
 
 @router.post("/image")
@@ -19,23 +25,32 @@ async def upload_image(file: UploadFile = File(...)):
     if len(content) > MAX_SIZE:
         raise HTTPException(400, "File too large — max 5MB")
 
-    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "jpg"
-    filename = f"{uuid.uuid4().hex}.{ext}"
-    filepath = os.path.join(UPLOAD_DIR, filename)
+    try:
+        # public_id único para evitar colisiones
+        public_id = f"safecar/{uuid.uuid4().hex}"
+        result = cloudinary.uploader.upload(
+            content,
+            public_id     = public_id,
+            overwrite     = False,
+            resource_type = "image",
+            # Optimización automática
+            transformation = [
+                {"quality": "auto", "fetch_format": "auto"}
+            ],
+        )
+        return {
+            "url":       result["secure_url"],
+            "public_id": result["public_id"],
+            "filename":  result["public_id"].split("/")[-1],
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Upload failed: {str(e)}")
 
-    with open(filepath, "wb") as f:
-        f.write(content)
 
-    # Return the public URL
-    base_url = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
-    return {"url": f"{base_url}/static/images/{filename}", "filename": filename}
-
-@router.delete("/image/{filename}")
-async def delete_image(filename: str):
-    # Basic security — no path traversal
-    if "/" in filename or "\\" in filename or ".." in filename:
-        raise HTTPException(400, "Invalid filename")
-    filepath = os.path.join(UPLOAD_DIR, filename)
-    if os.path.exists(filepath):
-        os.remove(filepath)
-    return {"deleted": True}
+@router.delete("/image/{public_id:path}")
+async def delete_image(public_id: str):
+    try:
+        cloudinary.uploader.destroy(f"safecar/{public_id}")
+        return {"deleted": True}
+    except Exception as e:
+        raise HTTPException(500, f"Delete failed: {str(e)}")
