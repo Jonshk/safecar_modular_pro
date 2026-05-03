@@ -50,7 +50,6 @@ const T = {
   },
 };
 
-// Gallery — put photos in public/training/ named 1.jpg ... 6.jpg
 const GALLERY_COUNT = 6;
 const galleryPhotos = Array.from({ length: GALLERY_COUNT }, (_, i) => ({
   src: `/training/${i + 1}.jpg`,
@@ -66,7 +65,32 @@ const gallSizes = [
   { gridColumn: "1 / 4", gridRow: "3 / 4" },
 ];
 
-// ── Scan tile (same HUD effect as GallerySection) ─────────
+// Opción B: imagen automática por palabra clave en el título
+function getDefaultImage(title: string): string {
+  const t = title.toLowerCase();
+  if (t.includes("electric") || t.includes("eléctric") || t.includes("electronic") || t.includes("wiring"))
+    return "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&q=80";
+  if (t.includes("diagnostic") || t.includes("diagnós") || t.includes("fault") || t.includes("obd") || t.includes("scan"))
+    return "https://images.unsplash.com/photo-1727893380169-4dda123e19f7?w=800&q=80";
+  if (t.includes("motorcycle") || t.includes("moto"))
+    return "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80";
+  if (t.includes("shop") || t.includes("taller") || t.includes("hands") || t.includes("learning"))
+    return "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=800&q=80";
+  if (t.includes("engine") || t.includes("motor"))
+    return "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80";
+  if (t.includes("transmis") || t.includes("brake") || t.includes("freno") || t.includes("suspension"))
+    return "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80";
+  return "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=800&q=80";
+}
+
+function normalizeMode(mode: string): string {
+  const m = mode?.toLowerCase().trim();
+  if (m === "presential" || m === "presencial" || m === "in-person" || m === "on-site") return "IN-PERSON";
+  if (m === "online") return "ONLINE";
+  if (m === "hybrid" || m === "híbrido") return "HYBRID";
+  return mode?.toUpperCase() ?? "";
+}
+
 function ScanTile({ src, alt, index, onOpen }: {
   src: string; alt: string; index: number; onOpen: () => void;
 }) {
@@ -81,7 +105,6 @@ function ScanTile({ src, alt, index, onOpen }: {
       if (e.isIntersecting) { setTimeout(() => setScanned(true), index * 120); obs.disconnect(); }
     }, { threshold: 0.1 });
     obs.observe(el);
-
     const speed = 24 + (index % 4) * 8;
     const tick = () => {
       if (!ref.current || !imgRef.current) return;
@@ -120,7 +143,6 @@ function ScanTile({ src, alt, index, onOpen }: {
   );
 }
 
-// ── Hero ──────────────────────────────────────────────────
 function TrainingHero({ t }: { t: typeof T.en }) {
   return (
     <section className="trnSection" id="training-hero">
@@ -139,15 +161,12 @@ function TrainingHero({ t }: { t: typeof T.en }) {
           <span className="trnTag">{t.tag2}</span>
           <span className="trnTag">{t.tag3}</span>
         </div>
-        <a href="#trn-courses" className="trnCta">
-          {t.coursesEyebrow} ↓
-        </a>
+        <a href="#trn-courses" className="trnCta">{t.coursesEyebrow} ↓</a>
       </div>
     </section>
   );
 }
 
-// ── Gallery ───────────────────────────────────────────────
 function TrainingGallery({ t }: { t: typeof T.en }) {
   const [open, setOpen] = useState<number | null>(null);
   const prev = useCallback(() => setOpen(i => i !== null ? (i - 1 + GALLERY_COUNT) % GALLERY_COUNT : null), []);
@@ -176,7 +195,6 @@ function TrainingGallery({ t }: { t: typeof T.en }) {
           <h2 className="glryTitle">{t.gallTitle}</h2>
           <p className="glrySub">{t.gallSub}</p>
         </div>
-
         <div className="trnMasonry">
           {galleryPhotos.map((p, i) => (
             <div key={i} className="glryCell" style={gallSizes[i] as React.CSSProperties}>
@@ -185,7 +203,6 @@ function TrainingGallery({ t }: { t: typeof T.en }) {
           ))}
         </div>
       </div>
-
       {open !== null && (
         <div className="glryLb" onClick={() => setOpen(null)}>
           <button className="glryLbClose" onClick={() => setOpen(null)}>
@@ -215,7 +232,6 @@ function TrainingGallery({ t }: { t: typeof T.en }) {
   );
 }
 
-// ── Course card ───────────────────────────────────────────
 function CourseCard({ module, lang, t }: { module: any; lang: "en" | "es"; t: typeof T.en }) {
   const ref = useRef<HTMLDivElement>(null);
   const [vis, setVis] = useState(false);
@@ -230,37 +246,37 @@ function CourseCard({ module, lang, t }: { module: any; lang: "en" | "es"; t: ty
     return () => obs.disconnect();
   }, []);
 
-  const title = lang === "es" && module.title_es ? module.title_es : module.title;
-  const desc  = lang === "es" && module.description_es ? module.description_es : module.description;
-  const dur   = module.duration_weeks > 0 ? `${module.duration_weeks} ${t.wks}` : t.open;
+  const title     = lang === "es" && module.title_es ? module.title_es : module.title;
+  const desc      = lang === "es" && module.description_es ? module.description_es : module.description;
+  const dur       = module.duration_weeks > 0 ? `${module.duration_weeks} ${t.wks}` : t.open;
   const spotsLeft = module.max_students - (module.enrolled_count || 0);
+  const modeLabel = normalizeMode(module.mode);
+
+  // Opción A (admin) tiene prioridad → Opción B (automática) como fallback
+  const imageSrc = module.image_url || getDefaultImage(title);
 
   return (
-    <div ref={ref} className={`trnCourseCard ${vis ? "trnCourseCardVis" : ""}`}>
+    <div
+      ref={ref}
+      className={`trnCourseCard ${vis ? "trnCourseCardVis" : ""}`}
+      style={{ display: "flex", flexDirection: "column" }}
+    >
       <div className="trnCourseImg">
-        {module.image_url
-          ? <img src={module.image_url} alt={title} />
-          : (
-            <div className="trnCourseImgFallback">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                  stroke="#d91f26" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-          )
-        }
-        <span className="trnCourseMode">{module.mode}</span>
+        <img src={imageSrc} alt={title} />
+        <span className="trnCourseMode">{modeLabel}</span>
       </div>
 
-      <div className="trnCourseBody">
+      <div className="trnCourseBody" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <div className="trnCourseMeta">
           <span className="trnCourseDur">⏱ {dur}</span>
           {module.schedule && <span className="trnCourseSched">📅 {module.schedule}</span>}
         </div>
-        <h3 className="trnCourseTitle">{title}</h3>
-        {desc && <p className="trnCourseDesc">{desc}</p>}
 
-        <div className="trnCourseFooter">
+        <h3 className="trnCourseTitle" style={{ minHeight: "3rem" }}>{title}</h3>
+
+        {desc && <p className="trnCourseDesc" style={{ flex: 1 }}>{desc}</p>}
+
+        <div className="trnCourseFooter" style={{ marginTop: "auto" }}>
           <div>
             <p className="trnCoursePrice">${module.price?.toFixed(2)}</p>
             {spotsLeft > 0
@@ -279,7 +295,6 @@ function CourseCard({ module, lang, t }: { module: any; lang: "en" | "es"; t: ty
   );
 }
 
-// ── Courses section ───────────────────────────────────────
 function TrainingCourses({ t, lang }: { t: typeof T.en; lang: "en" | "es" }) {
   const [modules, setModules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -298,7 +313,6 @@ function TrainingCourses({ t, lang }: { t: typeof T.en; lang: "en" | "es" }) {
           <p className="eyebrow">{t.coursesEyebrow}</p>
           <h2 className="glryTitle">{t.coursesSub}</h2>
         </div>
-
         {loading ? (
           <div className="trnCoursesGrid">
             {[1,2,3,4].map(i => <div key={i} className="trnCourseSkeleton" />)}
@@ -317,11 +331,9 @@ function TrainingCourses({ t, lang }: { t: typeof T.en; lang: "en" | "es" }) {
   );
 }
 
-// ── Page root ─────────────────────────────────────────────
 export default function TrainingPage() {
   const { lang } = useLang();
   const t = T[lang as "en" | "es"] ?? T.en;
-
   return (
     <>
       <TrainingHero t={t} />
