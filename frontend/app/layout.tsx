@@ -1,26 +1,22 @@
-"use client";
-
 import "./globals.css";
-import { usePathname } from "next/navigation";
 import { LangProvider } from "@/context/LangContext";
 import { CartProvider } from "@/context/CartContext";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import ClientLayout from "@/components/layout/ClientLayout";
+
+export const metadata = {
+  title: "Safe Car — Auto Repair & Diagnostics Chicago",
+  description: "Trusted automotive repair, electrical diagnostics and training in Chicago.",
+  icons: { icon: "/logo-safecar.png" },
+};
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isAdmin = pathname?.startsWith("/admin");
-
   return (
     <html lang="en">
       <head>
-        <title>Safe Car — Auto Repair & Diagnostics Chicago</title>
-        <meta name="description" content="Trusted automotive repair, electrical diagnostics and training in Chicago." />
-        <link rel="icon" href="/logo-safecar.png" type="image/png" />
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -28,19 +24,13 @@ export default function RootLayout({
         />
       </head>
       <body>
-        {isAdmin ? (
-          // Admin — sin header ni footer
-          <>{children}</>
-        ) : (
-          // Site público — con header y footer
-          <LangProvider>
-            <CartProvider>
-              <Header />
+        <LangProvider>
+          <CartProvider>
+            <ClientLayout>
               {children}
-              <Footer />
-            </CartProvider>
-          </LangProvider>
-        )}
+            </ClientLayout>
+          </CartProvider>
+        </LangProvider>
       </body>
     </html>
   );
