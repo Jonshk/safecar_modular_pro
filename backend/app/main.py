@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.db import init_db
 from app.routers.quote_requests import router as quote_router
-from app.routers.reviews import router as reviews_router
 from app.routers.parts import router as parts_router
 from app.routers.orders import router as orders_router
 from app.routers.training import router as training_router
@@ -19,7 +18,7 @@ app = FastAPI(title="Safe Car API", version="4.1.1")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,
+    allow_credentials=False,   # debe ser False cuando allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -43,7 +42,6 @@ def health():
 
 app.include_router(auth_router)
 app.include_router(quote_router)
-app.include_router(reviews_router)
 app.include_router(parts_router)
 app.include_router(orders_router)
 app.include_router(training_router)
