@@ -5,11 +5,18 @@ from app.schemas import PartCreate, PartUpdate, PartOut
 
 router = APIRouter(prefix="/parts", tags=["parts"])
 
+# Categorías válidas de partes — excluye TRAINING
+VALID_CATEGORIES = {"Brakes","Electrical","Engine","Suspension","Filters","Cooling","Body","Glass","Other"}
+
 @router.get("/meta/categories")
 def list_categories():
     conn = get_connection()
     c = conn.cursor()
-    c.execute("SELECT DISTINCT category FROM parts WHERE is_active = 1 ORDER BY category")
+    c.execute("""
+        SELECT DISTINCT category FROM parts
+        WHERE is_active = 1 AND category != 'TRAINING'
+        ORDER BY category
+    """)
     rows = c.fetchall()
     c.close(); conn.close()
     return [r["category"] for r in rows]
@@ -27,7 +34,8 @@ def list_parts(
     conn = get_connection()
     c = conn.cursor()
 
-    query = "SELECT * FROM parts WHERE is_active = 1"
+    # Excluir siempre los de categoría TRAINING
+    query = "SELECT * FROM parts WHERE is_active = 1 AND category != 'TRAINING'"
     params = []
 
     if category:
@@ -72,11 +80,8 @@ def create_part(part: PartCreate):
         INSERT INTO parts (name, description, category, brand, sku, price, stock,
                            image_url, compatible_vehicles, is_active)
         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING *
-    """, (
-        part.name, part.description, part.category, part.brand, part.sku,
-        part.price, part.stock, part.image_url, part.compatible_vehicles,
-        int(part.is_active)
-    ))
+    """, (part.name, part.description, part.category, part.brand, part.sku,
+          part.price, part.stock, part.image_url, part.compatible_vehicles, int(part.is_active)))
     row = c.fetchone()
     conn.commit()
     c.close(); conn.close()
@@ -91,16 +96,12 @@ def update_part(part_id: int, data: PartUpdate):
     if not existing:
         c.close(); conn.close()
         raise HTTPException(404, "Part not found")
-
     updates = {k: v for k, v in data.dict().items() if v is not None}
     if not updates:
         c.close(); conn.close()
         return dict(existing)
-
-    # PostgreSQL integer columns don't accept Python booleans
     if "is_active" in updates:
         updates["is_active"] = int(updates["is_active"])
-
     set_clause = ", ".join(f"{k} = %s" for k in updates)
     values = list(updates.values()) + [part_id]
     c.execute(f"UPDATE parts SET {set_clause} WHERE id = %s RETURNING *", values)

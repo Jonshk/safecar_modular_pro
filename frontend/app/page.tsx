@@ -5,6 +5,7 @@ import WhySafeCar from "@/components/home/WhySafeCar";
 import VehiclesSection from "@/components/home/VehiclesSection";
 import TrainingSection from "@/components/home/TrainingSection";
 import GallerySection from "@/components/home/GallerySection";
+import ReviewsSection from "@/components/home/ReviewsSection";
 import ContactSection from "@/components/home/ContactSection";
 
 export default function HomePage() {
@@ -17,6 +18,7 @@ export default function HomePage() {
       <VehiclesSection />
       <TrainingSection />
       <GallerySection />
+      <ReviewsSection />
       <ContactSection />
     </main>
   );

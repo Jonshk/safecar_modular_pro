@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 type NavbarProps = {
   lang: "en" | "es";
@@ -9,23 +9,13 @@ type NavbarProps = {
 };
 
 const content = {
-  en: { services:"Services", parts:"Parts", training:"Training", contact:"Contact", directions:"Get Directions", cta:"BOOK SERVICE", visitUs:"Visit Us" },
-  es: { services:"Servicios", parts:"Repuestos", training:"Formación", contact:"Contacto", directions:"Cómo llegar", cta:"RESERVAR CITA", visitUs:"Visítanos" },
+  en: { services:"Services", parts:"Parts", training:"Training", contact:"Contact", reviews:"Reviews", cta:"BOOK SERVICE" },
+  es: { services:"Servicios", parts:"Repuestos", training:"Formación", contact:"Contacto", reviews:"Reseñas", cta:"RESERVAR CITA" },
 };
 
 export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
   const t = content[lang];
-  const [dropOpen, setDropOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const dropRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const fn = (e: MouseEvent) => {
-      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setDropOpen(false);
-    };
-    document.addEventListener("mousedown", fn);
-    return () => document.removeEventListener("mousedown", fn);
-  }, []);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -46,24 +36,11 @@ export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
 
         {/* DESKTOP MENU */}
         <nav className="navMenu" aria-label="Main navigation">
-          <a href="/services" className="navLink">{t.services}</a>
-          <a href="/parts"    className="navLink">{t.parts}</a>
-          <a href="/training" className="navLink">{t.training}</a>
-          <div className="navDropWrap" ref={dropRef}>
-            <button className={`navLink navDropTrigger ${dropOpen ? "open" : ""}`}
-              onClick={() => setDropOpen(v => !v)} aria-expanded={dropOpen}>
-              {t.visitUs}
-              <svg className="dropChevron" width="11" height="11" viewBox="0 0 12 12" fill="none">
-                <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
-              </svg>
-            </button>
-            {dropOpen && (
-              <div className="navDropMenu" role="menu">
-                <a href="/contact"    className="navDropItem" onClick={() => setDropOpen(false)}>{t.contact}</a>
-                <a href="#directions" className="navDropItem" onClick={() => setDropOpen(false)}>{t.directions}</a>
-              </div>
-            )}
-          </div>
+          <a href="/services"  className="navLink">{t.services}</a>
+          <a href="/parts"     className="navLink">{t.parts}</a>
+          <a href="/training"  className="navLink">{t.training}</a>
+          <a href="/reviews"   className="navLink">{t.reviews}</a>
+          <a href="/contact"   className="navLink">{t.contact}</a>
         </nav>
 
         {/* DESKTOP ACTIONS */}
@@ -88,10 +65,9 @@ export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
           onClick={() => setMenuOpen(v => !v)} aria-label="Toggle menu">
           <span /><span /><span />
         </button>
-
       </div>
 
-      {/* MOBILE OVERLAY + DRAWER */}
+      {/* MOBILE */}
       {menuOpen && <div className="mobileOverlay" onClick={close} />}
       <div className={`mobileMenu ${menuOpen ? "mobileMenuOpen" : ""}`}>
         <div className="mobileMenuHead">
@@ -103,11 +79,11 @@ export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
           </button>
         </div>
         <nav className="mobileNav">
-          <a href="/services"   className="mobileNavLink" onClick={close}>{t.services}</a>
-          <a href="/parts"      className="mobileNavLink" onClick={close}>{t.parts}</a>
-          <a href="/training"   className="mobileNavLink" onClick={close}>{t.training}</a>
-          <a href="/contact"    className="mobileNavLink" onClick={close}>{t.contact}</a>
-          <a href="#directions" className="mobileNavLink" onClick={close}>{t.directions}</a>
+          <a href="/services"  className="mobileNavLink" onClick={close}>{t.services}</a>
+          <a href="/parts"     className="mobileNavLink" onClick={close}>{t.parts}</a>
+          <a href="/training"  className="mobileNavLink" onClick={close}>{t.training}</a>
+          <a href="/reviews"   className="mobileNavLink" onClick={close}>{t.reviews}</a>
+          <a href="/contact"   className="mobileNavLink" onClick={close}>{t.contact}</a>
         </nav>
         <div className="mobileMenuFooter">
           <a href="/contact" className="navBookBtn mobileBookBtn" onClick={close}>{t.cta}</a>
