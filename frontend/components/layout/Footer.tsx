@@ -148,7 +148,7 @@ export default function Footer() {
       <div className="footerBottom">
         <div className="container footerBottomInner">
           <div className="footerBottomLinks">
-            <a href="#">{t.privacy}</a>
+            <a href="/privacy-policy">{t.privacy}</a>
             <a href="#">{t.credits}</a>
           </div>
           <p className="footerBottomCopy">© 2026 Safe Car. {t.rights}</p>
