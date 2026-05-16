@@ -1,0 +1,21 @@
+<svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+<rect width="1920" height="1080" fill="#0a0608"/>
+<line x1="0" y1="0" x2="1920" y2="1080" stroke="rgba(217,31,38,0.04)" stroke-width="2"/>
+<line x1="1920" y1="0" x2="0" y2="1080" stroke="rgba(217,31,38,0.04)" stroke-width="2"/>
+<line x1="0" y1="270" x2="1920" y2="270" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+<line x1="0" y1="810" x2="1920" y2="810" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+<rect x="1300" y="100" width="520" height="880" rx="20" fill="rgba(217,31,38,0.05)" stroke="rgba(217,31,38,0.1)" stroke-width="2"/>
+<circle cx="1560" cy="340" r="150" fill="none" stroke="rgba(217,31,38,0.12)" stroke-width="3"/>
+<circle cx="1560" cy="340" r="90" fill="none" stroke="rgba(217,31,38,0.08)" stroke-width="2"/>
+<circle cx="1560" cy="790" r="120" fill="none" stroke="rgba(217,31,38,0.1)" stroke-width="3"/>
+<rect x="160" y="300" width="16" height="240" fill="#d91f26"/>
+<text x="200" y="420" font-family="Arial Black, Arial" font-size="160" font-weight="900" fill="#ffffff" letter-spacing="-6">EXPERT</text>
+<text x="200" y="580" font-family="Arial Black, Arial" font-size="160" font-weight="900" fill="#ffffff" letter-spacing="-6">MECHANICS</text>
+<text x="200" y="280" font-family="Arial" font-size="32" font-weight="700" fill="#d91f26" letter-spacing="12">SAFECAR AUTO REPAIR · CHICAGO</text>
+<text x="200" y="660" font-family="Arial" font-size="42" fill="rgba(255,255,255,0.45)">Certified technicians. Every make and model.</text>
+<rect x="160" y="820" width="340" height="3" fill="rgba(255,255,255,0.12)"/>
+<text x="160" y="870" font-family="Arial" font-size="28" fill="rgba(255,255,255,0.3)" letter-spacing="6">SINCE 2008</text>
+<text x="560" y="870" font-family="Arial" font-size="28" fill="rgba(255,255,255,0.3)" letter-spacing="6">CHICAGO, IL</text>
+<path d="M1760 1020 L1820 1020 L1820 960" fill="none" stroke="rgba(217,31,38,0.5)" stroke-width="3"/>
+<path d="M160 1020 L100 1020 L100 960" fill="none" stroke="rgba(217,31,38,0.5)" stroke-width="3"/>
+</svg>

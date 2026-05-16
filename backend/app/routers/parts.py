@@ -1,9 +1,12 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
-from app.db import get_connection
+from app.db import get_connection, USE_POSTGRES
 from app.schemas import PartCreate, PartUpdate, PartOut
 
 router = APIRouter(prefix="/parts", tags=["parts"])
+
+# Placeholder: %s for PostgreSQL, ? for SQLite
+PH = "%s" if USE_POSTGRES else "?"
 
 @router.get("/meta/categories")
 def list_categories():
@@ -31,21 +34,22 @@ def list_parts(
     params = []
 
     if category:
-        query += " AND category = %s"
+        query += f" AND category = {PH}"
         params.append(category)
     if search:
-        query += " AND (name ILIKE %s OR description ILIKE %s OR brand ILIKE %s)"
+        like = "ILIKE" if USE_POSTGRES else "LIKE"
+        query += f" AND (name {like} {PH} OR description {like} {PH} OR brand {like} {PH})"
         params += [f"%{search}%"] * 3
     if min_price is not None:
-        query += " AND price >= %s"
+        query += f" AND price >= {PH}"
         params.append(min_price)
     if max_price is not None:
-        query += " AND price <= %s"
+        query += f" AND price <= {PH}"
         params.append(max_price)
     if in_stock:
         query += " AND stock > 0"
 
-    query += " ORDER BY created_at DESC LIMIT %s OFFSET %s"
+    query += f" ORDER BY created_at DESC LIMIT {PH} OFFSET {PH}"
     params += [limit, skip]
 
     c.execute(query, params)
@@ -57,7 +61,7 @@ def list_parts(
 def get_part(part_id: int):
     conn = get_connection()
     c = conn.cursor()
-    c.execute("SELECT * FROM parts WHERE id = %s AND is_active = 1", (part_id,))
+    c.execute(f"SELECT * FROM parts WHERE id = {PH} AND is_active = 1", (part_id,))
     row = c.fetchone()
     c.close(); conn.close()
     if not row:
@@ -68,16 +72,23 @@ def get_part(part_id: int):
 def create_part(part: PartCreate):
     conn = get_connection()
     c = conn.cursor()
-    c.execute("""
-        INSERT INTO parts (name, description, category, brand, sku, price, stock,
-                           image_url, compatible_vehicles, is_active)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING *
-    """, (
-        part.name, part.description, part.category, part.brand, part.sku,
-        part.price, part.stock, part.image_url, part.compatible_vehicles,
-        int(part.is_active)
-    ))
-    row = c.fetchone()
+    if USE_POSTGRES:
+        c.execute(f"""
+            INSERT INTO parts (name, description, category, brand, sku, price, stock,
+                               image_url, compatible_vehicles, is_active)
+            VALUES ({PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH}) RETURNING *
+        """, (part.name, part.description, part.category, part.brand, part.sku,
+              part.price, part.stock, part.image_url, part.compatible_vehicles, int(part.is_active)))
+        row = c.fetchone()
+    else:
+        c.execute(f"""
+            INSERT INTO parts (name, description, category, brand, sku, price, stock,
+                               image_url, compatible_vehicles, is_active)
+            VALUES ({PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH},{PH})
+        """, (part.name, part.description, part.category, part.brand, part.sku,
+              part.price, part.stock, part.image_url, part.compatible_vehicles, int(part.is_active)))
+        c.execute(f"SELECT * FROM parts WHERE id = {PH}", (c.lastrowid,))
+        row = c.fetchone()
     conn.commit()
     c.close(); conn.close()
     return dict(row)
@@ -86,7 +97,7 @@ def create_part(part: PartCreate):
 def update_part(part_id: int, data: PartUpdate):
     conn = get_connection()
     c = conn.cursor()
-    c.execute("SELECT * FROM parts WHERE id = %s", (part_id,))
+    c.execute(f"SELECT * FROM parts WHERE id = {PH}", (part_id,))
     existing = c.fetchone()
     if not existing:
         c.close(); conn.close()
@@ -97,14 +108,20 @@ def update_part(part_id: int, data: PartUpdate):
         c.close(); conn.close()
         return dict(existing)
 
-    # PostgreSQL integer columns don't accept Python booleans
     if "is_active" in updates:
         updates["is_active"] = int(updates["is_active"])
 
-    set_clause = ", ".join(f"{k} = %s" for k in updates)
+    set_clause = ", ".join(f"{k} = {PH}" for k in updates)
     values = list(updates.values()) + [part_id]
-    c.execute(f"UPDATE parts SET {set_clause} WHERE id = %s RETURNING *", values)
-    row = c.fetchone()
+
+    if USE_POSTGRES:
+        c.execute(f"UPDATE parts SET {set_clause} WHERE id = {PH} RETURNING *", values)
+        row = c.fetchone()
+    else:
+        c.execute(f"UPDATE parts SET {set_clause} WHERE id = {PH}", values)
+        c.execute(f"SELECT * FROM parts WHERE id = {PH}", (part_id,))
+        row = c.fetchone()
+
     conn.commit()
     c.close(); conn.close()
     return dict(row)
@@ -113,7 +130,7 @@ def update_part(part_id: int, data: PartUpdate):
 def delete_part(part_id: int):
     conn = get_connection()
     c = conn.cursor()
-    c.execute("UPDATE parts SET is_active = 0 WHERE id = %s", (part_id,))
+    c.execute(f"UPDATE parts SET is_active = 0 WHERE id = {PH}", (part_id,))
     conn.commit()
     c.close(); conn.close()
     return {"deleted": True}
