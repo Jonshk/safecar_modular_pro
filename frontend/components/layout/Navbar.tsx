@@ -9,8 +9,8 @@ type NavbarProps = {
 };
 
 const content = {
-  en: { services:"Services", parts:"Parts", training:"Training", contact:"Contact", reviews:"Reviews", cta:"BOOK SERVICE" },
-  es: { services:"Servicios", parts:"Repuestos", training:"Formación", contact:"Contacto", reviews:"Reseñas", cta:"RESERVAR CITA" },
+  en: { services:"Services", parts:"Parts", training:"Training", contact:"Contact", reviews:"Reviews", tow:"Tow", book:"Book", cta:"BOOK SERVICE" },
+  es: { services:"Servicios", parts:"Repuestos", training:"Formación", contact:"Contacto", reviews:"Reseñas", tow:"Grúa", book:"Reservar", cta:"RESERVAR CITA" },
 };
 
 export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
@@ -27,25 +27,22 @@ export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
   return (
     <div className={`navBar ${scrolled ? "navScrolled" : ""}`}>
       <div className="container navInner">
-
-        {/* BRAND */}
         <a href="/" className="brand" aria-label="Safe Car home">
-          <img src="/logo-safecar.png" alt="Safe Car"
-            className={`brandLogo ${scrolled ? "brandScrolled" : ""}`} />
+          <img src="/logo-safecar.png" alt="Safe Car" className={`brandLogo ${scrolled ? "brandScrolled" : ""}`} />
         </a>
 
-        {/* DESKTOP MENU */}
         <nav className="navMenu" aria-label="Main navigation">
-          <a href="/services"  className="navLink">{t.services}</a>
-          <a href="/parts"     className="navLink">{t.parts}</a>
-          <a href="/training"  className="navLink">{t.training}</a>
-          <a href="/reviews"   className="navLink">{t.reviews}</a>
-          <a href="/contact"   className="navLink">{t.contact}</a>
+          <a href="/services" className="navLink">{t.services}</a>
+          <a href="/parts"    className="navLink">{t.parts}</a>
+          <a href="/training" className="navLink">{t.training}</a>
+          <a href="/reviews"  className="navLink">{t.reviews}</a>
+          <a href="/tow"      className="navLink navLinkTow">🚛 {t.tow}</a>
+          <a href="/book"     className="navLink navLinkBook">📅 {t.book}</a>
+          <a href="/contact"  className="navLink">{t.contact}</a>
         </nav>
 
-        {/* DESKTOP ACTIONS */}
         <div className="navActions">
-          <a href="/contact" className="navBookBtn">{t.cta}</a>
+          <a href="/book" className="navBookBtn">{t.cta}</a>
           <div className="langSwitch" role="group">
             <span className="langIcon" aria-hidden="true">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -60,14 +57,12 @@ export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
           </div>
         </div>
 
-        {/* HAMBURGER */}
         <button className={`navHamburger ${menuOpen ? "navHamOpen" : ""}`}
           onClick={() => setMenuOpen(v => !v)} aria-label="Toggle menu">
           <span /><span /><span />
         </button>
       </div>
 
-      {/* MOBILE */}
       {menuOpen && <div className="mobileOverlay" onClick={close} />}
       <div className={`mobileMenu ${menuOpen ? "mobileMenuOpen" : ""}`}>
         <div className="mobileMenuHead">
@@ -79,14 +74,16 @@ export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
           </button>
         </div>
         <nav className="mobileNav">
-          <a href="/services"  className="mobileNavLink" onClick={close}>{t.services}</a>
-          <a href="/parts"     className="mobileNavLink" onClick={close}>{t.parts}</a>
-          <a href="/training"  className="mobileNavLink" onClick={close}>{t.training}</a>
-          <a href="/reviews"   className="mobileNavLink" onClick={close}>{t.reviews}</a>
-          <a href="/contact"   className="mobileNavLink" onClick={close}>{t.contact}</a>
+          <a href="/services" className="mobileNavLink" onClick={close}>{t.services}</a>
+          <a href="/parts"    className="mobileNavLink" onClick={close}>{t.parts}</a>
+          <a href="/training" className="mobileNavLink" onClick={close}>{t.training}</a>
+          <a href="/reviews"  className="mobileNavLink" onClick={close}>{t.reviews}</a>
+          <a href="/tow"      className="mobileNavLink mobileNavLinkHighlight" onClick={close}>🚛 {t.tow}</a>
+          <a href="/book"     className="mobileNavLink mobileNavLinkHighlight" onClick={close}>📅 {t.book}</a>
+          <a href="/contact"  className="mobileNavLink" onClick={close}>{t.contact}</a>
         </nav>
         <div className="mobileMenuFooter">
-          <a href="/contact" className="navBookBtn mobileBookBtn" onClick={close}>{t.cta}</a>
+          <a href="/book" className="navBookBtn mobileBookBtn" onClick={close}>{t.cta}</a>
           <div className="mobileLang">
             <button className={`langOption ${lang==="en"?"active":""}`} onClick={() => { setLang("en"); close(); }}>EN</button>
             <span className="langDivider">/</span>
