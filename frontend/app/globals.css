@@ -4670,3 +4670,4 @@ select option {
 .bookTimeBtn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); color: var(--white60); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all .15s; }
 .bookTimeBtn:hover { border-color: var(--red); color: var(--white); }
 .bookTimeBtnActive { border-color: var(--red) !important; background: rgba(220,38,38,.12) !important; color: var(--white) !important; }
+.towPage, .bookPage { min-height: 100vh; padding: 160px 0 80px; }
