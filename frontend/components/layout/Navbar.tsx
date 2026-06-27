@@ -36,8 +36,8 @@ export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
           <a href="/parts"    className="navLink">{t.parts}</a>
           <a href="/training" className="navLink">{t.training}</a>
           <a href="/reviews"  className="navLink">{t.reviews}</a>
-          <a href="/tow"      className="navLink navLinkTow">🚛 {t.tow}</a>
-          <a href="/book"     className="navLink navLinkBook">📅 {t.book}</a>
+          <a href="/tow"      className="navLink">{t.tow}</a>
+          <a href="/book"     className="navLink">{t.book}</a>
           <a href="/contact"  className="navLink">{t.contact}</a>
         </nav>
 
@@ -78,8 +78,8 @@ export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
           <a href="/parts"    className="mobileNavLink" onClick={close}>{t.parts}</a>
           <a href="/training" className="mobileNavLink" onClick={close}>{t.training}</a>
           <a href="/reviews"  className="mobileNavLink" onClick={close}>{t.reviews}</a>
-          <a href="/tow"      className="mobileNavLink mobileNavLinkHighlight" onClick={close}>🚛 {t.tow}</a>
-          <a href="/book"     className="mobileNavLink mobileNavLinkHighlight" onClick={close}>📅 {t.book}</a>
+          <a href="/tow"      className="mobileNavLink" onClick={close}>{t.tow}</a>
+          <a href="/book"     className="mobileNavLink" onClick={close}>{t.book}</a>
           <a href="/contact"  className="mobileNavLink" onClick={close}>{t.contact}</a>
         </nav>
         <div className="mobileMenuFooter">
