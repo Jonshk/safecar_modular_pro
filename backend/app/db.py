@@ -16,6 +16,7 @@ def init_db():
     conn = get_connection()
     c = conn.cursor()
 
+    # ── Tablas existentes (sin cambios) ───────────────────
     c.execute("""CREATE TABLE IF NOT EXISTS quote_requests (
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL, phone TEXT NOT NULL, vehicle TEXT NOT NULL,
@@ -77,7 +78,72 @@ def init_db():
         created_at TEXT DEFAULT (to_char(now(), 'YYYY-MM-DD HH24:MI:SS'))
     )""")
 
-    # ── Seed parts ─────────────────────────────────────────
+    # ── NUEVA: Solicitudes de grúa ─────────────────────────
+    c.execute("""CREATE TABLE IF NOT EXISTS tow_requests (
+        id SERIAL PRIMARY KEY,
+        reference TEXT NOT NULL UNIQUE,
+        customer_name TEXT NOT NULL,
+        customer_phone TEXT NOT NULL,
+        vehicle_description TEXT NOT NULL,
+        pickup_address TEXT NOT NULL,
+        pickup_lat REAL DEFAULT 0,
+        pickup_lng REAL DEFAULT 0,
+        destination_address TEXT NOT NULL DEFAULT '',
+        notes TEXT DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'pending',
+        -- pending | confirmed | in_progress | completed | cancelled
+        admin_notes TEXT DEFAULT '',
+        created_at TEXT DEFAULT (to_char(now(), 'YYYY-MM-DD HH24:MI:SS')),
+        updated_at TEXT DEFAULT (to_char(now(), 'YYYY-MM-DD HH24:MI:SS'))
+    )""")
+
+    # ── NUEVA: Reservas de servicio mecánico ──────────────
+    c.execute("""CREATE TABLE IF NOT EXISTS service_bookings (
+        id SERIAL PRIMARY KEY,
+        reference TEXT NOT NULL UNIQUE,
+        customer_name TEXT NOT NULL,
+        customer_email TEXT NOT NULL,
+        customer_phone TEXT NOT NULL,
+        vehicle_make TEXT NOT NULL DEFAULT '',
+        vehicle_model TEXT NOT NULL DEFAULT '',
+        vehicle_year TEXT NOT NULL DEFAULT '',
+        service_type TEXT NOT NULL,
+        -- oil_change | brake_service | diagnostics | tire_rotation | general_repair | other
+        preferred_date TEXT NOT NULL,
+        preferred_time TEXT NOT NULL DEFAULT '',
+        notes TEXT DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'pending',
+        -- pending | confirmed | in_progress | completed | cancelled
+        admin_notes TEXT DEFAULT '',
+        created_at TEXT DEFAULT (to_char(now(), 'YYYY-MM-DD HH24:MI:SS')),
+        updated_at TEXT DEFAULT (to_char(now(), 'YYYY-MM-DD HH24:MI:SS'))
+    )""")
+
+    # ── NUEVA: FCM tokens del APK admin ───────────────────
+    c.execute("""CREATE TABLE IF NOT EXISTS fcm_tokens (
+        id SERIAL PRIMARY KEY,
+        token TEXT NOT NULL UNIQUE,
+        device_label TEXT DEFAULT 'Admin Device',
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT (to_char(now(), 'YYYY-MM-DD HH24:MI:SS')),
+        updated_at TEXT DEFAULT (to_char(now(), 'YYYY-MM-DD HH24:MI:SS'))
+    )""")
+
+    # ── NUEVA: Log de notificaciones enviadas ─────────────
+    c.execute("""CREATE TABLE IF NOT EXISTS notification_log (
+        id SERIAL PRIMARY KEY,
+        event_type TEXT NOT NULL,
+        -- tow_request | service_booking | order | quote
+        reference_id INTEGER DEFAULT 0,
+        reference_code TEXT DEFAULT '',
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        tokens_sent INTEGER DEFAULT 0,
+        success INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (to_char(now(), 'YYYY-MM-DD HH24:MI:SS'))
+    )""")
+
+    # ── Seeds existentes (sin cambios) ────────────────────
     c.execute("SELECT COUNT(*) as cnt FROM parts")
     parts_count = c.fetchone()["cnt"]
     if parts_count == 0:
@@ -111,15 +177,14 @@ def init_db():
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,1)
         """, parts)
 
-    # ── Seed training modules ──────────────────────────────
     c.execute("SELECT COUNT(*) as cnt FROM training_modules")
     modules_count = c.fetchone()["cnt"]
     if modules_count == 0:
         modules = [
-            ("Automotive Electronics Fundamentals","Fundamentos de Electrónica Automotriz","Circuits, sensors, actuators and how modern vehicles communicate. Learn to read wiring diagrams and trace faults from root cause.","Circuitos, sensores, actuadores y redes de comunicación del vehículo.",4,299.00,"hybrid",16,"Saturdays 9AM–1PM","",1,1),
+            ("Automotive Electronics Fundamentals","Fundamentos de Electrónica Automotriz","Circuits, sensors, actuators and how modern vehicles communicate.","Circuitos, sensores, actuadores y redes de comunicación del vehículo.",4,299.00,"hybrid",16,"Saturdays 9AM–1PM","",1,1),
             ("Diagnostics Workflow & Fault Isolation","Flujo de Diagnóstico y Aislamiento de Fallas","Systematic scan tool usage, live data analysis and freeze frames.","Uso sistemático del escáner, análisis de datos en vivo.",6,399.00,"hybrid",14,"Saturdays & Sundays 9AM–12PM","",1,2),
-            ("Motorcycle Mechanics","Mecánica de Motocicletas","Engine teardown, suspension tuning, electrical and fuel systems for two-wheel vehicles.","Desmontaje de motor, suspensión, eléctrico y combustible para motos.",3,249.00,"presential",12,"Fridays 4PM–8PM","",1,3),
-            ("Hands-On Shop Learning Blocks","Bloques de Aprendizaje en Taller Real","Work live jobs alongside certified technicians. Real vehicles, real tools, real feedback.","Trabaja en vehículos reales junto a técnicos certificados.",0,199.00,"presential",8,"Open schedule — book a slot","",1,4),
+            ("Motorcycle Mechanics","Mecánica de Motocicletas","Engine teardown, suspension tuning, electrical and fuel systems.","Desmontaje de motor, suspensión, eléctrico y combustible para motos.",3,249.00,"presential",12,"Fridays 4PM–8PM","",1,3),
+            ("Hands-On Shop Learning Blocks","Bloques de Aprendizaje en Taller Real","Work live jobs alongside certified technicians.","Trabaja en vehículos reales junto a técnicos certificados.",0,199.00,"presential",8,"Open schedule — book a slot","",1,4),
         ]
         c.executemany("""
             INSERT INTO training_modules (title, title_es, description, description_es, duration_weeks, price, mode, max_students, schedule, image_url, is_active, sort_order)

@@ -11,19 +11,22 @@ from app.routers.orders import router as orders_router
 from app.routers.training import router as training_router
 from app.routers.auth import router as auth_router
 from app.routers.upload import router as upload_router
+# ── Nuevos routers ────────────────────────────────────────
+from app.routers.tow_requests import router as tow_router
+from app.routers.service_bookings import router as bookings_router
+from app.routers.notifications import router as notifications_router
 import os
 
-app = FastAPI(title="Safe Car API", version="4.1.1")
+app = FastAPI(title="Safe Car API", version="5.0.0")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,   # debe ser False cuando allow_origins=["*"]
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Serve uploaded images as static files
 static_dir = os.path.join(os.path.dirname(__file__), "static", "images")
 os.makedirs(static_dir, exist_ok=True)
 app.mount("/static/images", StaticFiles(directory=static_dir), name="images")
@@ -34,15 +37,21 @@ def startup_event():
 
 @app.get("/")
 def root():
-    return {"message": "Safe Car API v4.1.1 running"}
+    return {"message": "Safe Car API v5.0.0 running"}
 
 @app.get("/health")
 def health():
     return {"ok": True}
 
+# ── Routers existentes ────────────────────────────────────
 app.include_router(auth_router)
 app.include_router(quote_router)
 app.include_router(parts_router)
 app.include_router(orders_router)
 app.include_router(training_router)
 app.include_router(upload_router)
+
+# ── Routers nuevos ────────────────────────────────────────
+app.include_router(tow_router)
+app.include_router(bookings_router)
+app.include_router(notifications_router)
