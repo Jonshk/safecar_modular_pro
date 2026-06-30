@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from typing import List, Optional
 from pydantic import BaseModel
 from app.db import get_connection, generate_reference
-from app.routers.notifications import send_push_to_all_admins
+from app.routers.notifications import send_push_to_all_admins, send_push_to_token
 
 router = APIRouter(prefix="/tow", tags=["tow_requests"])
 
@@ -17,10 +17,15 @@ class TowRequestCreate(BaseModel):
     pickup_lng: Optional[float] = 0.0
     destination_address: Optional[str] = ""
     notes: Optional[str] = ""
+    fcm_token: Optional[str] = ""  # token del cliente, para poder notificarle cambios de estado
 
 class TowStatusUpdate(BaseModel):
     status: str           # pending | confirmed | in_progress | completed | cancelled
     admin_notes: Optional[str] = ""
+
+class TechnicianLocationUpdate(BaseModel):
+    technician_lat: float
+    technician_lng: float
 
 class TowRequestOut(BaseModel):
     id: int
@@ -35,10 +40,43 @@ class TowRequestOut(BaseModel):
     notes: str
     status: str
     admin_notes: str
+    technician_lat: float
+    technician_lng: float
+    technician_updated_at: str
     created_at: str
     updated_at: str
     class Config:
         from_attributes = True
+
+# Versión pública para /tow/track/{reference} — no expone el teléfono
+# completo del cliente ni las notas internas del admin, solo lo que el
+# cliente necesita ver de su propia solicitud.
+class TowTrackOut(BaseModel):
+    reference: str
+    vehicle_description: str
+    pickup_address: str
+    pickup_lat: float
+    pickup_lng: float
+    destination_address: str
+    status: str
+    technician_lat: float
+    technician_lng: float
+    technician_updated_at: str
+    created_at: str
+    updated_at: str
+    class Config:
+        from_attributes = True
+
+# Labels que ve el cliente según el estado interno. "in_progress" en
+# grúas se traduce como "En camino" (implica GPS), distinto de
+# reservas/pedidos donde sería "En curso".
+STATUS_LABELS_TOW = {
+    "pending": "Solicitud recibida",
+    "confirmed": "Confirmado, asignando técnico",
+    "in_progress": "En camino hacia ti",
+    "completed": "Servicio completado",
+    "cancelled": "Cancelado",
+}
 
 # ── Endpoints ─────────────────────────────────────────────
 
@@ -50,13 +88,15 @@ def create_tow_request(data: TowRequestCreate):
     c.execute("""
         INSERT INTO tow_requests
           (reference, customer_name, customer_phone, vehicle_description,
-           pickup_address, pickup_lat, pickup_lng, destination_address, notes)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
+           pickup_address, pickup_lat, pickup_lng, destination_address, notes,
+           fcm_token)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
     """, (
         reference, data.customer_name, data.customer_phone,
         data.vehicle_description, data.pickup_address,
         data.pickup_lat or 0.0, data.pickup_lng or 0.0,
-        data.destination_address or "", data.notes or ""
+        data.destination_address or "", data.notes or "",
+        data.fcm_token or ""
     ))
     row_id = c.fetchone()["id"]
     conn.commit()
@@ -88,6 +128,22 @@ def list_tow_requests(skip: int = 0, limit: int = 50, status: Optional[str] = No
     c.close(); conn.close()
     return rows
 
+# IMPORTANTE: esta ruta debe ir ANTES de "/{tow_id}" porque FastAPI
+# resuelve las rutas en orden de declaración — si "/{tow_id}" fuera
+# primero, "track" se interpretaría como un tow_id inválido.
+@router.get("/track/{reference}", response_model=TowTrackOut)
+def track_by_reference(reference: str):
+    """Endpoint público (sin auth) para que el cliente consulte el
+    estado de su solicitud con la referencia que recibió al crearla."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("SELECT * FROM tow_requests WHERE reference=%s", (reference,))
+    row = c.fetchone()
+    c.close(); conn.close()
+    if not row:
+        raise HTTPException(404, "No encontramos una solicitud con esa referencia")
+    return dict(row)
+
 @router.get("/{tow_id}", response_model=TowRequestOut)
 def get_tow_request(tow_id: int):
     conn = get_connection()
@@ -109,6 +165,40 @@ def update_tow_status(tow_id: int, data: TowStatusUpdate):
                updated_at=to_char(now(), 'YYYY-MM-DD HH24:MI:SS')
            WHERE id=%s""",
         (data.status, data.admin_notes or "", tow_id)
+    )
+    if c.rowcount == 0:
+        c.close(); conn.close()
+        raise HTTPException(404, "Solicitud de grúa no encontrada")
+    conn.commit()
+    result = _get_tow(c, tow_id)
+
+    # Notificar al cliente del cambio de estado, si tenemos su token.
+    fcm_token = result.get("fcm_token") or ""
+    if fcm_token:
+        label = STATUS_LABELS_TOW.get(data.status, data.status)
+        send_push_to_token(
+            token=fcm_token,
+            event_type="tow_status_update",
+            title="Actualización de tu grúa",
+            body=f"{label} · Ref: {result['reference']}",
+            reference=result['reference'],
+        )
+
+    c.close(); conn.close()
+    return result
+
+@router.patch("/{tow_id}/location", response_model=TowRequestOut)
+def update_technician_location(tow_id: int, data: TechnicianLocationUpdate):
+    """Llamado por la app Admin cada ~30s mientras status=in_progress,
+    para que el cliente vea al técnico moverse en el mapa."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute(
+        """UPDATE tow_requests
+           SET technician_lat=%s, technician_lng=%s,
+               technician_updated_at=to_char(now(), 'YYYY-MM-DD HH24:MI:SS')
+           WHERE id=%s""",
+        (data.technician_lat, data.technician_lng, tow_id)
     )
     if c.rowcount == 0:
         c.close(); conn.close()

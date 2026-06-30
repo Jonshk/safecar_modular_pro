@@ -75,7 +75,6 @@ def register_token(data: RegisterTokenIn):
     """
     conn = get_connection()
     c = conn.cursor()
-    # Upsert: si el token ya existe actualiza label y lo activa
     c.execute("""
         INSERT INTO fcm_tokens (token, device_label, is_active)
         VALUES (%s, %s, 1)
@@ -137,7 +136,7 @@ def get_notification_log(skip: int = 0, limit: int = 50):
     c.close(); conn.close()
     return rows
 
-# ── Función interna usada por otros routers ───────────────
+# ── Funciones internas usadas por otros routers ───────────
 
 def send_push_to_all_admins(
     event_type: str,
@@ -147,13 +146,14 @@ def send_push_to_all_admins(
     body: str
 ) -> dict:
     """
-    Envía notificación push a todos los dispositivos admin activos.
+    Envía notificación push a todos los dispositivos ADMIN activos
+    (tabla fcm_tokens). Usado cuando el CLIENTE crea una solicitud
+    nueva y hay que avisarle al taller.
     Retorna dict con tokens_sent y success count.
     Falla silenciosamente si Firebase no está configurado.
     """
     app = _get_firebase()
 
-    # Obtener tokens activos de la BD
     conn = get_connection()
     c = conn.cursor()
     c.execute("SELECT token FROM fcm_tokens WHERE is_active=1")
@@ -163,13 +163,11 @@ def send_push_to_all_admins(
     success_count = 0
 
     if not tokens:
-        # Log vacío pero no falla
         _log_notification(c, conn, event_type, reference_id, reference_code, title, body, 0, 0)
         c.close(); conn.close()
         return {"tokens_sent": 0, "success": 0}
 
     if app is None:
-        # Firebase no configurado: loguea pero no falla el request
         logger.warning(f"Push omitido (Firebase sin configurar): {title}")
         _log_notification(c, conn, event_type, reference_id, reference_code, title, body, tokens_sent, 0)
         c.close(); conn.close()
@@ -190,7 +188,7 @@ def send_push_to_all_admins(
                     priority="high",
                     notification=messaging.AndroidNotification(
                         icon="ic_notification",
-                        color="#D4AF37",   # dorado Safe Car
+                        color="#D4AF37",   # dorado Safe Car Admin
                         sound="default",
                         channel_id="safecar_admin_channel",
                     ),
@@ -200,11 +198,9 @@ def send_push_to_all_admins(
             for t in tokens
         ]
 
-        # Envío en batch (hasta 500 por llamada)
         batch_response = messaging.send_each(messages)
         success_count = batch_response.success_count
 
-        # Desactivar tokens inválidos automáticamente
         for idx, resp in enumerate(batch_response.responses):
             if not resp.success:
                 err_code = str(resp.exception)
@@ -223,6 +219,59 @@ def send_push_to_all_admins(
     _log_notification(c, conn, event_type, reference_id, reference_code, title, body, tokens_sent, success_count)
     c.close(); conn.close()
     return {"tokens_sent": tokens_sent, "success": success_count}
+
+
+def send_push_to_token(
+    token: str,
+    event_type: str,
+    title: str,
+    body: str,
+    reference: str = "",
+) -> dict:
+    """
+    Envía notificación push a UN solo token específico — usado para
+    notificar al CLIENTE (no al admin) cuando cambia el estado de su
+    grúa/reserva/pedido. A diferencia de send_push_to_all_admins, este
+    token no vive en la tabla fcm_tokens (esa es solo para admins),
+    sino en la columna fcm_token de la fila del propio tow_request /
+    booking / order.
+    """
+    if not token:
+        return {"success": False, "reason": "no_token"}
+
+    app = _get_firebase()
+    if app is None:
+        logger.warning(f"Push a cliente omitido (Firebase sin configurar): {title}")
+        return {"success": False, "reason": "firebase_not_configured"}
+
+    conn = get_connection()
+    c = conn.cursor()
+    success = False
+    try:
+        from firebase_admin import messaging
+
+        message = messaging.Message(
+            notification=messaging.Notification(title=title, body=body),
+            data={"event_type": event_type, "reference_code": reference},
+            android=messaging.AndroidConfig(
+                priority="high",
+                notification=messaging.AndroidNotification(
+                    icon="ic_notification",
+                    color="#E8323C",   # rojo de marca Safe Car (cliente)
+                    sound="default",
+                    channel_id="safecar_client_channel",
+                ),
+            ),
+            token=token,
+        )
+        messaging.send(message)
+        success = True
+    except Exception as e:
+        logger.error(f"Error enviando push a cliente: {e}")
+
+    _log_notification(c, conn, event_type, 0, "", title, body, 1, 1 if success else 0)
+    c.close(); conn.close()
+    return {"success": success}
 
 
 def _log_notification(c, conn, event_type, reference_id, reference_code, title, body, tokens_sent, success):

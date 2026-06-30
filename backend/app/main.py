@@ -15,6 +15,8 @@ from app.routers.upload import router as upload_router
 from app.routers.tow_requests import router as tow_router
 from app.routers.service_bookings import router as bookings_router
 from app.routers.notifications import router as notifications_router
+# ── Migración temporal (BORRAR después de usarla una vez) ──
+from app.routers.admin_migrate import router as admin_migrate_router
 import os
 
 app = FastAPI(title="Safe Car API", version="5.0.0")
@@ -55,3 +57,6 @@ app.include_router(upload_router)
 app.include_router(tow_router)
 app.include_router(bookings_router)
 app.include_router(notifications_router)
+
+# ── Migración temporal (BORRAR después de usarla una vez) ──
+app.include_router(admin_migrate_router)
