@@ -227,6 +227,7 @@ def send_push_to_token(
     title: str,
     body: str,
     reference: str = "",
+    status: str = "",
 ) -> dict:
     """
     Envía notificación push a UN solo token específico — usado para
@@ -252,7 +253,7 @@ def send_push_to_token(
 
         message = messaging.Message(
             notification=messaging.Notification(title=title, body=body),
-            data={"event_type": event_type, "reference_code": reference},
+            data={"event_type": event_type, "reference_code": reference, "status": status},
             android=messaging.AndroidConfig(
                 priority="high",
                 notification=messaging.AndroidNotification(

@@ -53,6 +53,7 @@ class TowRequestOut(BaseModel):
 # cliente necesita ver de su propia solicitud.
 class TowTrackOut(BaseModel):
     reference: str
+    customer_name: str
     vehicle_description: str
     pickup_address: str
     pickup_lat: float
@@ -182,6 +183,7 @@ def update_tow_status(tow_id: int, data: TowStatusUpdate):
             title="Actualización de tu grúa",
             body=f"{label} · Ref: {result['reference']}",
             reference=result['reference'],
+            status=data.status,
         )
 
     c.close(); conn.close()
