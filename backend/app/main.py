@@ -11,10 +11,11 @@ from app.routers.orders import router as orders_router
 from app.routers.training import router as training_router
 from app.routers.auth import router as auth_router
 from app.routers.upload import router as upload_router
+# ── Nuevos routers ────────────────────────────────────────
 from app.routers.tow_requests import router as tow_router
 from app.routers.service_bookings import router as bookings_router
 from app.routers.notifications import router as notifications_router
-from app.routers.reviews import router as reviews_router
+# ── Migración temporal (BORRAR después de usarla una vez) ──
 import os
 
 app = FastAPI(title="Safe Car API", version="5.0.0")
@@ -43,13 +44,17 @@ def root():
 def health():
     return {"ok": True}
 
+# ── Routers existentes ────────────────────────────────────
 app.include_router(auth_router)
 app.include_router(quote_router)
 app.include_router(parts_router)
 app.include_router(orders_router)
 app.include_router(training_router)
 app.include_router(upload_router)
+
+# ── Routers nuevos ────────────────────────────────────────
 app.include_router(tow_router)
 app.include_router(bookings_router)
 app.include_router(notifications_router)
-app.include_router(reviews_router)
+
+# ── Migración temporal (BORRAR después de usarla una vez) ──
