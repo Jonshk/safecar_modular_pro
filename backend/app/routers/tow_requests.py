@@ -52,6 +52,7 @@ class TowRequestOut(BaseModel):
 # completo del cliente ni las notas internas del admin, solo lo que el
 # cliente necesita ver de su propia solicitud.
 class TowTrackOut(BaseModel):
+    id: int
     reference: str
     customer_name: str
     vehicle_description: str
