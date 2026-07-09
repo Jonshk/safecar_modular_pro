@@ -76,6 +76,7 @@ STATUS_LABELS_TOW = {
     "pending": "Solicitud recibida",
     "confirmed": "Confirmado, asignando técnico",
     "in_progress": "En camino hacia ti",
+    "arrived":     "¡Tu técnico llegó!",
     "completed": "Servicio completado",
     "cancelled": "Cancelado",
 }
@@ -156,7 +157,7 @@ def get_tow_request(tow_id: int):
 
 @router.patch("/{tow_id}/status", response_model=TowRequestOut)
 def update_tow_status(tow_id: int, data: TowStatusUpdate):
-    valid = {"pending", "confirmed", "in_progress", "completed", "cancelled"}
+    valid = {"pending", "confirmed", "in_progress", "arrived", "completed", "cancelled"}
     if data.status not in valid:
         raise HTTPException(400, f"status debe ser uno de: {', '.join(valid)}")
     conn = get_connection()
@@ -190,10 +191,22 @@ def update_tow_status(tow_id: int, data: TowStatusUpdate):
     c.close(); conn.close()
     return result
 
+import math
+
+def _haversine_meters(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Distancia en metros entre dos coordenadas GPS."""
+    R = 6_371_000
+    φ1, φ2 = math.radians(lat1), math.radians(lat2)
+    dφ = math.radians(lat2 - lat1)
+    dλ = math.radians(lng2 - lng1)
+    a = math.sin(dφ/2)**2 + math.cos(φ1)*math.cos(φ2)*math.sin(dλ/2)**2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
 @router.patch("/{tow_id}/location", response_model=TowRequestOut)
 def update_technician_location(tow_id: int, data: TechnicianLocationUpdate):
-    """Llamado por la app Admin cada ~30s mientras status=in_progress,
-    para que el cliente vea al técnico moverse en el mapa."""
+    """Llamado por la app Admin cada ~30s mientras status=in_progress.
+    Si el técnico está a menos de 75m del cliente, cambia automáticamente
+    el estado a 'arrived' y manda push al cliente."""
     conn = get_connection()
     c = conn.cursor()
     c.execute(
@@ -208,6 +221,40 @@ def update_technician_location(tow_id: int, data: TechnicianLocationUpdate):
         raise HTTPException(404, "Solicitud de grúa no encontrada")
     conn.commit()
     result = _get_tow(c, tow_id)
+
+    # ── Detección automática de llegada ──────────────────────
+    if result.get("status") == "in_progress":
+        pick_lat = result.get("pickup_lat", 0) or 0
+        pick_lng = result.get("pickup_lng", 0) or 0
+        if pick_lat != 0 and pick_lng != 0:
+            dist = _haversine_meters(
+                data.technician_lat, data.technician_lng,
+                pick_lat, pick_lng
+            )
+            if dist <= 75:
+                c2 = conn.cursor()
+                c2.execute(
+                    """UPDATE tow_requests
+                       SET status='arrived',
+                           updated_at=to_char(now(),'YYYY-MM-DD HH24:MI:SS')
+                       WHERE id=%s""",
+                    (tow_id,)
+                )
+                conn.commit()
+                result = _get_tow(c2, tow_id)
+                # Push al cliente
+                fcm_token = result.get("fcm_token", "")
+                if fcm_token:
+                    send_push_to_token(
+                        token=fcm_token,
+                        event_type="tow_status_update",
+                        title="¡Tu técnico llegó!",
+                        body=f"El técnico está en tu ubicación · Ref: {result['reference']}",
+                        reference=result["reference"],
+                        status="arrived",
+                    )
+                c2.close()
+
     c.close(); conn.close()
     return result
 
