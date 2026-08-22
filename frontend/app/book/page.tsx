@@ -51,6 +51,11 @@ const services = [
   { value: "diagnostics",    en: "Diagnostics",      es: "Diagnóstico" },
   { value: "tire_rotation",  en: "Tire Rotation",    es: "Rotación de neumáticos" },
   { value: "general_repair", en: "General Repair",   es: "Reparación general" },
+  { value: "body_collision_repair", en: "Collision Repair", es: "Latonería / Colisión" },
+  { value: "body_paint_refinishing", en: "Paint & Refinishing", es: "Pintura y refinado" },
+  { value: "body_dent_removal", en: "Dent Removal", es: "Eliminación de abolladuras" },
+  { value: "body_frame_straightening", en: "Frame Straightening", es: "Enderezado de chasis" },
+  { value: "body_shop_estimate", en: "Body Shop Estimate", es: "Presupuesto de carrocería" },
   { value: "other",          en: "Other",            es: "Otro" },
 ];
 

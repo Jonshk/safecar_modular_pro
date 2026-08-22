@@ -10,7 +10,9 @@ router = APIRouter(prefix="/bookings", tags=["service_bookings"])
 
 SERVICE_TYPES = {
     "oil_change", "brake_service", "diagnostics",
-    "tire_rotation", "general_repair", "tow_followup", "other"
+    "tire_rotation", "general_repair", "tow_followup", "other",
+    "body_collision_repair", "body_paint_refinishing",
+    "body_dent_removal", "body_frame_straightening", "body_shop_estimate"
 }
 
 class BookingCreate(BaseModel):
@@ -161,5 +163,10 @@ def _service_label(service_type: str) -> str:
         "general_repair": "Reparación general",
         "tow_followup": "Seguimiento de grúa",
         "other": "Otro servicio",
+        "body_collision_repair": "Latonería / Reparación de colisión",
+        "body_paint_refinishing": "Pintura y refinado",
+        "body_dent_removal": "Eliminación de abolladuras",
+        "body_frame_straightening": "Enderezado de chasis",
+        "body_shop_estimate": "Presupuesto de taller de carrocería",
     }
     return labels.get(service_type, service_type)

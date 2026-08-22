@@ -3,7 +3,7 @@ export const site = {
   phoneHref: "tel:+18723545706",
   address: "1052 W 51st St, Chicago, IL 60609",
   hours: "Mon - Fri 7:30 AM - 5:30 PM",
-  apiBase: process.env.NEXT_PUBLIC_API_BASE || "https://safecar-backend.onrender.com",
+  apiBase: process.env.NEXT_PUBLIC_API_BASE || "https://safecar-backend.fly.dev",
 };
 
 export const hero = {
@@ -26,7 +26,9 @@ export const services = [
   { title: "Engine & Maintenance", text: "Oil changes, tune-ups, cooling systems, filters, batteries and scheduled maintenance." },
   { title: "Parts & Components", text: "Quality repair parts and practical service options, not vague promises." },
   { title: "Starting & Charging", text: "Battery, alternator and starter testing with clear repair recommendations." },
-  { title: "General Repair", text: "Domestic, Asian and European vehicle repair for real-world local customers." }
+  { title: "General Repair", text: "Domestic, Asian and European vehicle repair for real-world local customers." },
+  { title: "Collision Repair", text: "Frame straightening, panel replacement and structural repair after an accident." },
+  { title: "Paint & Refinishing", text: "Full and spot paint matching, clear coat and factory-quality refinishing." }
 ];
 
 export const brands = ["Ford", "Chevrolet", "Toyota", "Honda", "Nissan", "Hyundai", "BMW", "Mercedes-Benz", "Audi", "Volkswagen"];

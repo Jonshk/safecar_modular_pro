@@ -62,6 +62,22 @@ const serviceDetails: Record<string, {
     },
     bullets: { en:["EVAP & emissions repair","AC service & leak repair","Exhaust system repair","O2 sensor & catalytic converter","Bilingual service — EN / ES","Domestic, Asian & European vehicles"], es:["Reparación EVAP y emisiones","Servicio y reparación de fugas de AC","Reparación del sistema de escape","Sensor O2 y convertidor catalítico","Servicio bilingüe — EN / ES","Vehículos domésticos, asiáticos y europeos"] },
   },
+  "Collision Repair": {
+    tagline: { en:"Straight frame. Solid structure. Done right.", es:"Chasis recto. Estructura sólida. Bien hecho." },
+    body: {
+      en: ["After a collision, what you can't see matters more than what you can. A frame that's off by even half an inch changes handling, tire wear, and crash safety on the next impact.","We use computerized frame measuring to pull structural damage back to factory spec, then rebuild with OEM-spec panels and proper welding — not just filler and hope.","Every collision repair includes a full structural inspection, a written estimate for insurance, and a final alignment check before the car leaves the shop."],
+      es: ["Después de una colisión, lo que no se ve importa más que lo que se ve. Un chasis desalineado cambia el manejo, el desgaste de neumáticos y la seguridad en el próximo impacto.","Usamos medición computarizada de chasis para devolver el daño estructural a la especificación de fábrica, y reconstruimos con paneles de especificación OEM y soldadura adecuada.","Cada reparación de colisión incluye inspección estructural completa, presupuesto escrito para el seguro y revisión final de alineación antes de entregar el auto."],
+    },
+    bullets: { en:["Computerized frame measuring & pulling","OEM-spec panel replacement","Structural welding & reinforcement","Insurance-ready written estimates","Post-repair alignment check","Bilingual claims support — EN / ES"], es:["Medición y enderezado de chasis computarizado","Reemplazo de paneles OEM","Soldadura y refuerzo estructural","Presupuestos listos para el seguro","Revisión de alineación post-reparación","Soporte bilingüe para reclamos — EN / ES"] },
+  },
+  "Paint & Refinishing": {
+    tagline: { en:"Matched to the panel. Not just to the eye.", es:"Igualada al panel. No solo a simple vista." },
+    body: {
+      en: ["Factory color codes drift with age, sun exposure, and prior repairs. We pull your vehicle's exact code and blend-test it against the actual panel before spraying — not just the paint chip.","Our paint booth controls temperature and filtration for a clean, even finish, whether it's a single-panel touch-up or a full respray after collision work.","Every job gets clear coat, wet sanding, and a buff-out pass so the repaired area disappears into the rest of the car."],
+      es: ["Los códigos de color de fábrica se desvanecen con la edad, el sol y reparaciones previas. Extraemos el código exacto de tu vehículo y hacemos una prueba de mezcla contra el panel real antes de pintar.","Nuestra cabina de pintura controla temperatura y filtración para un acabado limpio y uniforme, ya sea un retoque de un panel o una repintada completa.","Cada trabajo lleva capa transparente, lijado en húmedo y pulido final para que el área reparada se integre con el resto del auto."],
+    },
+    bullets: { en:["Factory color code matching","Spot & full panel refinishing","Climate-controlled spray booth","Clear coat & wet sanding","Buff-out & final polish","Post-paint quality inspection"], es:["Igualación de código de color de fábrica","Retoque parcial o repintado completo","Cabina de pintura con clima controlado","Capa transparente y lijado en húmedo","Pulido y acabado final","Inspección de calidad post-pintura"] },
+  },
 };
 
 // ── ALL keyframes in ONE place — fixes hydration mismatch ─────
@@ -170,6 +186,27 @@ const AnimatedIcons: Record<string, React.ReactNode> = {
       <circle className="sp1" cx="26" cy="38" r="2" fill="#d91f26"/>
       <circle className="sp2" cx="22" cy="44" r="1.5" fill="#d91f26"/>
       <circle className="sp3" cx="28" cy="42" r="1" fill="#ff6060"/>
+    </svg>
+  ),
+  "Collision Repair": (
+    <svg viewBox="0 0 64 64" fill="none" className="svcSvg">
+      <path d="M10 40 L18 24 Q20 20 26 20 H38 Q44 20 46 24 L54 40" stroke="rgba(255,255,255,.4)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <circle cx="18" cy="42" r="5" stroke="rgba(255,255,255,.5)" strokeWidth="2" fill="none"/>
+      <circle cx="46" cy="42" r="5" stroke="rgba(255,255,255,.5)" strokeWidth="2" fill="none"/>
+      <path className="bar" d="M24 30 L30 24 L34 30 L40 24" stroke="#d91f26" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" strokeDasharray="40"/>
+      <path className="zap2" d="M30 18l-6 8h5l-3 7 8-10h-5l4-5z" fill="#d91f26"/>
+    </svg>
+  ),
+  "Paint & Refinishing": (
+    <svg viewBox="0 0 64 64" fill="none" className="svcSvg">
+      <path d="M20 44 L38 26 Q40 24 42 26 L44 28 Q46 30 44 32 L26 50z" stroke="rgba(255,255,255,.5)" strokeWidth="2" fill="none" strokeLinejoin="round"/>
+      <path d="M20 44 L14 50 L18 52 L26 50z" fill="#d91f26" opacity=".8"/>
+      <g className="g2">
+        <circle cx="42" cy="20" r="6" stroke="#d91f26" strokeWidth="2" fill="none"/>
+        <circle cx="42" cy="20" r="2" fill="rgba(217,31,38,.4)"/>
+      </g>
+      <circle className="sp1" cx="34" cy="34" r="1.6" fill="#ff6060"/>
+      <circle className="sp2" cx="30" cy="38" r="1.2" fill="#ff6060"/>
     </svg>
   ),
 };
