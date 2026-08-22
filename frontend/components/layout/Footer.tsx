@@ -2,43 +2,46 @@
 
 import { useLang } from "@/context/LangContext";
 
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.safecar.safecar_app&pcampaignid=web_share";
-const QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(PLAY_STORE_URL)}&color=ffffff&bgcolor=111111&margin=8`;
-
 const footerText = {
   en: {
     tagline: "Professional auto repair, diagnostics and training you can trust.",
     quickLinks: "Quick Links",
     links: [
       { label: "Services",  href: "/services" },
+      { label: "Body Shop", href: "/body-shop" },
       { label: "Parts",     href: "/parts" },
       { label: "Training",  href: "/training" },
+      { label: "Reviews",   href: "/reviews" },
+      { label: "Book",      href: "/book" },
       { label: "Contact",   href: "/contact" },
     ],
     followUs: "Follow Us",
     rights: "All Rights Reserved.",
     privacy: "Privacy Policy",
     credits: "Image Credits",
-    appTitle: "Download the App",
-    appSub: "Track tows & book services — free on Android",
-    appBtn: "Get it on Google Play",
+    bodyShopTitle: "Body Shop",
+    bodyShopSub: "Collision repair, dent removal and factory-quality paint matching.",
+    bodyShopBtn: "Get an Estimate",
   },
   es: {
     tagline: "Reparación automotriz, diagnóstico y formación de confianza.",
     quickLinks: "Enlaces rápidos",
     links: [
       { label: "Servicios", href: "/services" },
+      { label: "Taller de Carrocería", href: "/body-shop" },
       { label: "Repuestos", href: "/parts" },
       { label: "Formación", href: "/training" },
+      { label: "Reseñas",   href: "/reviews" },
+      { label: "Reservar",  href: "/book" },
       { label: "Contacto",  href: "/contact" },
     ],
     followUs: "Síguenos",
     rights: "Todos los derechos reservados.",
     privacy: "Política de Privacidad",
     credits: "Créditos de Imágenes",
-    appTitle: "Descarga la App",
-    appSub: "Rastrea grúas y reserva servicios — gratis en Android",
-    appBtn: "Descargar en Google Play",
+    bodyShopTitle: "Taller de Carrocería",
+    bodyShopSub: "Latonería, eliminación de abolladuras y pintura de calidad de fábrica.",
+    bodyShopBtn: "Pedir Presupuesto",
   },
 };
 
@@ -140,41 +143,6 @@ export default function Footer() {
             </a>
             <p>1052 W 51st St, Chicago, IL 60609</p>
             <p>Mon - Fri: 7:30 AM - 5:30 PM</p>
-          </div>
-        </div>
-
-        {/* APP col — nueva columna con QR */}
-        <div>
-          <h3 className="footerHeading">{t.appTitle}</h3>
-          <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:"14px" }}>
-              <img
-                src={QR_URL}
-                alt="QR Safe Car App"
-                width={90}
-                height={90}
-                style={{ borderRadius:"8px", border:"1px solid rgba(255,255,255,0.1)", flexShrink:0 }}
-              />
-              <p style={{ margin:0, fontSize:"0.75rem", color:"rgba(255,255,255,0.45)", lineHeight:1.6 }}>
-                {t.appSub}
-              </p>
-            </div>
-            <a
-              href={PLAY_STORE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display:"inline-flex", alignItems:"center", gap:"8px", background:"#fff", color:"#000", padding:"9px 14px", borderRadius:"8px", textDecoration:"none", fontWeight:700, fontSize:"0.78rem", width:"fit-content", transition:"opacity 0.2s" }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M3.18 1.2L13.46 12 3.18 22.8c-.46-.25-.76-.73-.76-1.27V2.47c0-.54.3-1.02.76-1.27z" fill="#EA4335"/>
-                <path d="M17.54 8.46L5.3 1.74l9.28 9.28 2.96-2.56z" fill="#FBBC04"/>
-                <path d="M20.7 10.56c.69.38 1.12 1.09 1.12 1.88 0 .78-.43 1.49-1.12 1.88l-3.16 1.74-3.25-3.25 3.25-3.25 3.16 1z" fill="#4285F4"/>
-                <path d="M5.3 22.26l12.24-6.72-2.96-2.56L5.3 22.26z" fill="#34A853"/>
-              </svg>
-              Google Play
-            </a>
           </div>
         </div>
 

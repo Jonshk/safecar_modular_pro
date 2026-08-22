@@ -31,6 +31,11 @@ export const services = [
   { title: "Paint & Refinishing", text: "Full and spot paint matching, clear coat and factory-quality refinishing." }
 ];
 
+export const bodyShopServices = [
+  { title: "Collision Repair", text: "Frame straightening, panel replacement and structural repair after an accident." },
+  { title: "Paint & Refinishing", text: "Full and spot paint matching, clear coat and factory-quality refinishing." }
+];
+
 export const brands = ["Ford", "Chevrolet", "Toyota", "Honda", "Nissan", "Hyundai", "BMW", "Mercedes-Benz", "Audi", "Volkswagen"];
 export const training = [
   "Automotive electronics fundamentals",

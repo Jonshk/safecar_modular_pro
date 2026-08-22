@@ -127,6 +127,47 @@ const AnimatedIcons: Record<string, React.ReactNode> = {
       <circle className="sp3" cx="28" cy="42" r="1" fill="#ff6060"/>
     </svg>
   ),
+  "Collision Repair": (
+    <svg viewBox="0 0 64 64" fill="none" className="svcSvg">
+      <style>{`
+        .dent{animation:dentPulse 1.8s ease-in-out infinite}
+        .impact{animation:impactBurst 1.8s ease-in-out infinite}
+        @keyframes dentPulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}
+        @keyframes impactBurst{0%,100%{opacity:0;transform:scale(.4)}30%{opacity:1;transform:scale(1.15)}60%,100%{opacity:0;transform:scale(1.4)}}
+      `}</style>
+      <path className="dent" d="M8 40 Q8 24 24 22 L44 22 Q56 22 56 34 Q56 42 46 42 L14 42 Q8 42 8 40Z"
+        stroke="rgba(255,255,255,.5)" strokeWidth="2" fill="none" transform-origin="32px 32px"/>
+      <circle cx="20" cy="42" r="4" stroke="rgba(255,255,255,.4)" strokeWidth="2" fill="none"/>
+      <circle cx="44" cy="42" r="4" stroke="rgba(255,255,255,.4)" strokeWidth="2" fill="none"/>
+      <g className="impact">
+        {[0,60,120,180,240,300].map((a,i)=>(
+          <line key={i} x1="32" y1="18" x2="32" y2="10" stroke="#d91f26" strokeWidth="2" strokeLinecap="round"
+            transform={`rotate(${a} 32 18)`}/>
+        ))}
+      </g>
+    </svg>
+  ),
+  "Paint & Refinishing": (
+    <svg viewBox="0 0 64 64" fill="none" className="svcSvg">
+      <style>{`
+        .spray{animation:sprayOut 1.6s ease-in-out infinite}
+        .gun{animation:gunShift 1.6s ease-in-out infinite}
+        @keyframes sprayOut{0%,100%{opacity:0;transform:translateX(0) scale(.6)}50%{opacity:1;transform:translateX(6px) scale(1)}}
+        @keyframes gunShift{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+      `}</style>
+      <g className="gun">
+        <rect x="10" y="26" width="20" height="10" rx="2" stroke="rgba(255,255,255,.5)" strokeWidth="2" fill="none"/>
+        <path d="M16 36 L12 48 L20 48 L20 36" stroke="rgba(255,255,255,.5)" strokeWidth="2" fill="none" strokeLinejoin="round"/>
+        <rect x="28" y="29" width="6" height="4" rx="1" fill="#d91f26"/>
+      </g>
+      <g className="spray">
+        <circle cx="42" cy="28" r="2" fill="#d91f26"/>
+        <circle cx="48" cy="31" r="1.5" fill="#d91f26" opacity=".7"/>
+        <circle cx="46" cy="24" r="1.3" fill="#d91f26" opacity=".8"/>
+        <circle cx="52" cy="27" r="1" fill="#ff6060" opacity=".6"/>
+      </g>
+    </svg>
+  ),
 };
 
 function Card3D({ title, text, index }: { title: string; text: string; index: number }) {

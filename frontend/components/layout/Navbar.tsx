@@ -9,8 +9,8 @@ type NavbarProps = {
 };
 
 const content = {
-  en: { services:"Services", parts:"Parts", training:"Training", contact:"Contact", reviews:"Reviews", tow:"Tow", book:"Book", cta:"BOOK SERVICE" },
-  es: { services:"Servicios", parts:"Repuestos", training:"Formación", contact:"Contacto", reviews:"Reseñas", tow:"Grúa", book:"Reservar", cta:"RESERVAR CITA" },
+  en: { services:"Services", bodyshop:"Body Shop", parts:"Parts", training:"Training", contact:"Contact", reviews:"Reviews", tow:"Tow", book:"Book", cta:"BOOK SERVICE" },
+  es: { services:"Servicios", bodyshop:"Taller de Carrocería", parts:"Repuestos", training:"Formación", contact:"Contacto", reviews:"Reseñas", tow:"Grúa", book:"Reservar", cta:"RESERVAR CITA" },
 };
 
 export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
@@ -33,6 +33,7 @@ export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
 
         <nav className="navMenu" aria-label="Main navigation">
           <a href="/services" className="navLink">{t.services}</a>
+          <a href="/body-shop" className="navLink">{t.bodyshop}</a>
           <a href="/parts"    className="navLink">{t.parts}</a>
           <a href="/training" className="navLink">{t.training}</a>
           <a href="/reviews"  className="navLink">{t.reviews}</a>
@@ -75,6 +76,7 @@ export default function Navbar({ lang, setLang, scrolled }: NavbarProps) {
         </div>
         <nav className="mobileNav">
           <a href="/services" className="mobileNavLink" onClick={close}>{t.services}</a>
+          <a href="/body-shop" className="mobileNavLink" onClick={close}>{t.bodyshop}</a>
           <a href="/parts"    className="mobileNavLink" onClick={close}>{t.parts}</a>
           <a href="/training" className="mobileNavLink" onClick={close}>{t.training}</a>
           <a href="/reviews"  className="mobileNavLink" onClick={close}>{t.reviews}</a>

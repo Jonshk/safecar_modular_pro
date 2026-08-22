@@ -860,6 +860,124 @@ textarea {
   background: #0d0f12;
 }
 
+.splitSectionReverse {
+  grid-template-columns: 0.9fr 1.1fr;
+}
+
+.splitSectionReverse .splitImage {
+  order: 2;
+}
+
+.splitSectionReverse .splitCopy {
+  order: 1;
+}
+
+/* BODY SHOP — neon mesh + light beam over image */
+.bsImageWrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.bsImageWrap img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.05) contrast(1.05);
+  transition: opacity .35s ease, transform 6s ease;
+  opacity: 1;
+  transform: scale(1.02);
+  z-index: 1;
+}
+
+.bsImg.bsImgFading {
+  opacity: 0;
+  transform: scale(1.08);
+}
+
+/* Red mesh grid overlay */
+.bsMesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background-image:
+    linear-gradient(rgba(217,31,38,.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(217,31,38,.18) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mix-blend-mode: screen;
+  opacity: .55;
+}
+
+/* Dark vignette so mesh/beam pop and text edges stay legible */
+.bsVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background:
+    radial-gradient(ellipse at center, transparent 40%, rgba(6,6,8,.65) 100%),
+    linear-gradient(180deg, rgba(6,6,8,.35) 0%, transparent 25%, transparent 75%, rgba(6,6,8,.55) 100%);
+}
+
+/* Neon red diagonal light beam sweeping across */
+.bsBeam {
+  position: absolute;
+  top: -60%;
+  left: -20%;
+  width: 55%;
+  height: 220%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(217,31,38,0) 35%,
+    rgba(217,31,38,.55) 48%,
+    rgba(255,96,96,.85) 50%,
+    rgba(217,31,38,.55) 52%,
+    rgba(217,31,38,0) 65%,
+    transparent 100%
+  );
+  filter: blur(6px);
+  z-index: 4;
+  pointer-events: none;
+  animation: bsBeamSweep 5s ease-in-out infinite;
+}
+
+@keyframes bsBeamSweep {
+  0%   { transform: translateX(-40%) rotate(8deg); opacity: 0; }
+  8%   { opacity: 1; }
+  45%  { opacity: .9; }
+  60%  { transform: translateX(220%) rotate(8deg); opacity: 0; }
+  100% { transform: translateX(220%) rotate(8deg); opacity: 0; }
+}
+
+/* Glowing red border frame */
+.bsGlowBorder {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(217,31,38,.35),
+    inset 0 0 60px rgba(217,31,38,.15);
+}
+
+/* Corner accent brackets, neon style */
+.bsCorner {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  z-index: 6;
+  pointer-events: none;
+  border-color: #ff4b4b;
+  filter: drop-shadow(0 0 6px rgba(217,31,38,.8));
+}
+.bsCorner--tl { top: 18px; left: 18px; border-top: 2px solid; border-left: 2px solid; }
+.bsCorner--br { bottom: 18px; right: 18px; border-bottom: 2px solid; border-right: 2px solid; }
+
 .splitImage img {
   width: 100%;
   height: 100%;
@@ -1662,6 +1780,28 @@ a.ctInfoText:hover { color: #ffffff; }
   background: linear-gradient(90deg, transparent, rgba(217,31,38,.5), transparent);
   position: relative;
   z-index: 1;
+}
+
+.footerBodyShopBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(217,31,38,.5);
+  background: rgba(217,31,38,.08);
+  color: #ff6060;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: .02em;
+  transition: background .2s ease, box-shadow .2s ease, color .2s ease;
+}
+
+.footerBodyShopBtn:hover {
+  background: rgba(217,31,38,.18);
+  box-shadow: 0 0 18px rgba(217,31,38,.35);
+  color: #ffffff;
 }
 
 .footerMain {

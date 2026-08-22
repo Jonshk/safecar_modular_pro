@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useState, useId } from "react";
+import { useRef, useEffect, useState, useId, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLang } from "@/context/LangContext";
 import { services } from "@/lib/content";
 
@@ -264,6 +265,7 @@ function Card3D({ title, text, index, onClick }: {
   return (
     <article
       ref={cardRef}
+      id={`svc-${title.replace(/\s+/g, "-")}`}
       className="svcCard svcCardPage"
       onClick={onClick}
       onKeyDown={(e) => { if (e.key==="Enter"||e.key===" ") onClick(); }}
@@ -341,10 +343,18 @@ function DetailModal({ title, lang, onClose, included, bookLabel }: {
 }
 
 // ── Page ─────────────────────────────────────────────────────
-export default function ServicesPage() {
+function ServicesPageInner() {
   const { lang } = useLang();
   const t = pageText[lang as keyof typeof pageText] ?? pageText.en;
   const [active, setActive] = useState<string|null>(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const open = searchParams.get("open");
+    if (open && services.some((s) => s.title === open)) {
+      setActive(open);
+    }
+  }, [searchParams]);
 
   return (
     <>
@@ -535,5 +545,12 @@ export default function ServicesPage() {
         />
       )}
     </>
+  );
+}
+export default function ServicesPage() {
+  return (
+    <Suspense fallback={null}>
+      <ServicesPageInner />
+    </Suspense>
   );
 }
