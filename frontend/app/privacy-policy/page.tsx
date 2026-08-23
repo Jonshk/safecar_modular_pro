@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
       <h2>8. Contact Us</h2>
       <p>
         Safe Car Automotive<br />
-        1052 W 51st St, Chicago, IL 60609<br />
+        706 N Cicero Ave, Chicago, IL 60644<br />
         Email: safecarautomotive@gmail.com<br />
         Phone: +1 (872) 361-1607
       </p>

@@ -21,8 +21,8 @@ export default function TopBar({ lang, setLang, scrolled }: TopBarProps) {
         </a>
 
         {/* ADDRESS — opens Google Maps */}
-        
-          href="https://maps.google.com/?q=706+N+Cicero+Ave,+Chicago,+IL+60644"
+        <a
+          href="https://maps.google.com/?q=1052+W+51st+St,+Chicago,+IL+60609"
           target="_blank"
           rel="noopener noreferrer"
           className="topItem topItemLink"
@@ -36,7 +36,7 @@ export default function TopBar({ lang, setLang, scrolled }: TopBarProps) {
         </a>
 
         {/* WHATSAPP */}
-        
+        <a
           href="https://wa.me/18723545706"
           target="_blank"
           rel="noopener noreferrer"

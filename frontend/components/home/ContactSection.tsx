@@ -54,8 +54,8 @@ const contactInfo = [
         <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.6"/>
       </svg>
     ),
-    label: "1052 W 51st St, Chicago, IL 60609",
-    href: "https://maps.google.com/?q=1052+W+51st+St+Chicago+IL",
+    label: "706 N Cicero Ave, Chicago, IL 60644",
+    href: "https://maps.google.com/?q=706+N+Cicero+Ave+Chicago+IL",
   },
   {
     icon: (
