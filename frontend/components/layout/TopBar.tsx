@@ -21,8 +21,8 @@ export default function TopBar({ lang, setLang, scrolled }: TopBarProps) {
         </a>
 
         {/* ADDRESS — opens Google Maps */}
-        <a
-          href="https://maps.google.com/?q=1052+W+51st+St,+Chicago,+IL+60609"
+        
+          href="https://maps.google.com/?q=706+N+Cicero+Ave,+Chicago,+IL+60644"
           target="_blank"
           rel="noopener noreferrer"
           className="topItem topItemLink"
@@ -32,11 +32,11 @@ export default function TopBar({ lang, setLang, scrolled }: TopBarProps) {
               stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
           </svg>
-          <span>1052 W 51st St, Chicago, IL 60609</span>
+          <span>706 N Cicero Ave, Chicago, IL 60644</span>
         </a>
 
         {/* WHATSAPP */}
-        <a
+        
           href="https://wa.me/18723545706"
           target="_blank"
           rel="noopener noreferrer"

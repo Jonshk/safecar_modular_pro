@@ -1,7 +1,7 @@
 export const site = {
   phone: "+1 (872) 354-5706",
   phoneHref: "tel:+18723545706",
-  address: "1052 W 51st St, Chicago, IL 60609",
+  address: "706 N Cicero Ave, Chicago, IL 60644",
   hours: "Mon - Fri 7:30 AM - 5:30 PM",
   apiBase: process.env.NEXT_PUBLIC_API_BASE || "https://safecar-backend.fly.dev",
 };
