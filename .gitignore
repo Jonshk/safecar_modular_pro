@@ -16,4 +16,7 @@ frontend/.env
 *.log
 
 .history/
-.lh/
+.lh/__pycache__/
+*.pyc
+backend/safecar.db
+backend/.env
