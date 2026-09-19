@@ -20,3 +20,4 @@ frontend/.env
 *.pyc
 backend/safecar.db
 backend/.env
+.lh/
