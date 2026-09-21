@@ -22,7 +22,7 @@ export default function TopBar({ lang, setLang, scrolled }: TopBarProps) {
 
         {/* ADDRESS — opens Google Maps */}
         <a
-          href="https://maps.google.com/?q=1052+W+51st+St,+Chicago,+IL+60609"
+          href="https://maps.google.com/?q=706+N+Cicero+Ave,+Chicago,+IL+60644"
           target="_blank"
           rel="noopener noreferrer"
           className="topItem topItemLink"

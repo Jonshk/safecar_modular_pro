@@ -116,8 +116,8 @@ export default function ContactPage() {
 
             {card(
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8323C" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-              "ADDRESS", "1052 W 51st St", "Chicago, IL 60609",
-              "https://maps.google.com/?q=1052+W+51st+St+Chicago+IL+60609"
+              "ADDRESS", "706 N Cicero Ave", "Chicago, IL 60644",
+              "https://maps.google.com/?q=706+N+Cicero+Ave+Chicago+IL+60644"
             )}
 
             {card(
