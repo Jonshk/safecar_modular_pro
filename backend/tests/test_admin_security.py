@@ -54,6 +54,21 @@ def test_admin_routes_reject_other_subject(method, path):
                        'local-test-key', algorithm='HS256')
     assert client.request(method, concrete(path), headers={'Authorization': 'Bearer ' + token}, json={}).status_code == 403
 
+@pytest.mark.parametrize('method,path', protected)
+def test_admin_routes_reject_expired_token(method, path):
+    token = jwt.encode({'sub': 'test-admin', 'exp': datetime.now(timezone.utc) - timedelta(minutes=1)},
+                       'local-test-key', algorithm='HS256')
+    assert client.request(method, concrete(path), headers={'Authorization': 'Bearer ' + token}, json={}).status_code == 401
+
+@pytest.mark.parametrize('endpoint', [
+    ('GET', '/bookings/'), ('GET', '/tow/'), ('GET', '/notifications/log'),
+    ('POST', '/notifications/register-token'), ('POST', '/notifications/test-push'),
+    ('POST', '/orders/{order_id}/confirm-manual'), ('POST', '/parts/admin/create'),
+    ('POST', '/training/admin/modules'), ('GET', '/reviews/admin/pending'),
+])
+def test_critical_admin_routes_are_protected(endpoint):
+    assert endpoint in protected
+
 def test_valid_admin_reaches_handler():
     isolated = FastAPI()
     @isolated.get('/protected', dependencies=[Depends(require_admin)])
@@ -80,3 +95,4 @@ def test_schema_sql_is_valid_postgresql():
     from pglast import parse_sql
     from app.schema_migrations import SCHEMA_COMPLETION_SQL
     assert len(parse_sql(SCHEMA_COMPLETION_SQL)) == 6
+
