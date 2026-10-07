@@ -16,7 +16,7 @@ from app.routers.service_bookings import router as bookings_router
 from app.routers.notifications import router as notifications_router
 from app.routers.reviews import router as reviews_router
 from app.routers.chat import router as chat_router
-from app.routers.admin_migrate import router as migrate_router
+from app.admin_security import secure_admin_routes
 import os
 
 app = FastAPI(title="Safe Car API", version="5.0.0")
@@ -46,14 +46,13 @@ def health():
     return {"ok": True}
 
 app.include_router(auth_router)
-app.include_router(quote_router)
-app.include_router(parts_router)
-app.include_router(orders_router)
-app.include_router(training_router)
-app.include_router(upload_router)
-app.include_router(tow_router)
-app.include_router(bookings_router)
-app.include_router(notifications_router)
-app.include_router(reviews_router)
+app.include_router(secure_admin_routes(quote_router))
+app.include_router(secure_admin_routes(parts_router))
+app.include_router(secure_admin_routes(orders_router))
+app.include_router(secure_admin_routes(training_router))
+app.include_router(secure_admin_routes(upload_router))
+app.include_router(secure_admin_routes(tow_router))
+app.include_router(secure_admin_routes(bookings_router))
+app.include_router(secure_admin_routes(notifications_router))
+app.include_router(secure_admin_routes(reviews_router))
 app.include_router(chat_router)
-app.include_router(migrate_router)
