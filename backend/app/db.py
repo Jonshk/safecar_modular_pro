@@ -1,6 +1,7 @@
 import os, secrets, string
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from app.schema_migrations import SCHEMA_COMPLETION_SQL
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
@@ -142,6 +143,8 @@ def init_db():
         success INTEGER DEFAULT 0,
         created_at TEXT DEFAULT (to_char(now(), 'YYYY-MM-DD HH24:MI:SS'))
     )""")
+
+    c.execute(SCHEMA_COMPLETION_SQL)
 
     # ── Seeds existentes (sin cambios) ────────────────────
     c.execute("SELECT COUNT(*) as cnt FROM parts")
