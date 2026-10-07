@@ -45,7 +45,7 @@ def _get_firebase():
         _firebase_app = firebase_admin.initialize_app(cred)
         return _firebase_app
     except Exception as e:
-        logger.error(f"Error inicializando Firebase: {e}")
+        logger.error("Error inicializando Firebase (%s)", type(e).__name__)
         return None
 
 # ── Schemas ───────────────────────────────────────────────
@@ -209,12 +209,12 @@ def send_push_to_all_admins(
                         "UPDATE fcm_tokens SET is_active=0 WHERE token=%s",
                         (tokens[idx],)
                     )
-                    logger.info(f"Token desactivado (inválido): {tokens[idx][:20]}...")
+                    logger.info("Token de notificaciones desactivado por ser inválido")
 
         conn.commit()
 
     except Exception as e:
-        logger.error(f"Error enviando push: {e}")
+        logger.error("Error enviando push (%s)", type(e).__name__)
 
     _log_notification(c, conn, event_type, reference_id, reference_code, title, body, tokens_sent, success_count)
     c.close(); conn.close()
@@ -268,7 +268,7 @@ def send_push_to_token(
         messaging.send(message)
         success = True
     except Exception as e:
-        logger.error(f"Error enviando push a cliente: {e}")
+        logger.error("Error enviando push a cliente (%s)", type(e).__name__)
 
     _log_notification(c, conn, event_type, 0, "", title, body, 1, 1 if success else 0)
     c.close(); conn.close()
@@ -284,4 +284,4 @@ def _log_notification(c, conn, event_type, reference_id, reference_code, title, 
         """, (event_type, reference_id, reference_code, title, body, tokens_sent, success))
         conn.commit()
     except Exception as e:
-        logger.error(f"Error guardando log de notificación: {e}")
+        logger.error("Error guardando log de notificación (%s)", type(e).__name__)
